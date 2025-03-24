@@ -225,7 +225,7 @@ tabs.Server:CreateButton("Kill all Zombies", function()
     end
 end)
 
-tabs.Server:CreateButton("Loop kill Zombies", function()
+tabs.Server:CreateToggle("Loop kill Zombies", function()
 
 end)
 
@@ -235,7 +235,7 @@ tabs.Server:CreateButton("God Humans", function()
 
     if lplr.Team == Teams.Zombie and remote then
         for _, v in game.Players:GetPlayers() do
-            if v.Character and v.Character.PrimaryPart then
+            if v.Team ~= lplr.Team and v.Character and v.Character.PrimaryPart then
                 remote:FireServer(
                     v.Character.Humanoid,
                     v.Character.HumanoidRootPart,
@@ -252,7 +252,7 @@ tabs.Server:CreateButton("God Humans", function()
     end
 end)
 
-tabs.Server:CreateButton("Loop god Humans", function()
+tabs.Server:CreateToggle("Loop god Humans", function()
 
 end)
 
@@ -261,7 +261,7 @@ tabs.Server:CreateButton("God Zombies", function()
 
     if lplr.Team == Teams.Human and remote then
         for _, v in game.Players:GetPlayers() do
-            if lplr ~= v and v.Character and v.Team ~= lplr.Team and v.Character.PrimaryPart then
+            if v.Team ~= lplr.Team and v.Character and v.Team ~= lplr.Team and v.Character.PrimaryPart then
                 remote:FireServer(
                     v.Character.Humanoid,
                     v.Character.HumanoidRootPart,
@@ -273,25 +273,33 @@ tabs.Server:CreateButton("God Zombies", function()
                 )
             end
         end
-
-        for _, v in game.workspace.Zombies:GetChildren() do
-            if v.Humanoid and v.HumanoidRootPart then
-                remote:FireServer(
-                    v.Humanoid,
-                    v.HumanoidRootPart,
-                    tonumber("nan"),
-                    2,
-                    0,
-                    false
-                )
-            end
-        end
     else
         gui:Notify("You need to be a Human") 
     end
 end)
 
-tabs.Server:CreateButton("Loop god Zombies", function()
+tabs.Server:CreateToggle("Loop god Zombies", function()
+
+end)
+
+tabs.Server:CreateButton("God NPC Zombies", function()
+    local remote = lplr.Backpack:FindFirstChild("InflictTarget", true) or lplr.Character:FindFirstChild("InflictTarget", true)
+        
+    for _, v in game.workspace.Zombies:GetChildren() do
+        if v.Humanoid and v.HumanoidRootPart then
+             remote:FireServer(
+                v.Humanoid,
+                v.HumanoidRootPart,
+                tonumber("nan"),
+                2,
+                0,
+                false
+            )
+        end
+    end
+end)
+
+tabs.Server:CreateToggle("Loop God NPC Zombies", function()
 
 end)
 
