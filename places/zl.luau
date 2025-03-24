@@ -4,6 +4,7 @@ local tabs = {
     Player = true,
     Server = true,
     Items = true,
+    Teleports = true,
     Extra = true
 }
 
@@ -20,6 +21,9 @@ local Teams = game:GetService("Teams")
 
 local lplr = plrs.LocalPlayer
 local pStats = lplr:WaitForChild("stats")
+local char = lplr.Character
+local hum = char.HumanoidRootPart
+local HumRootPart = char.HumanoidRootPart
 
 local getGun = function()
     local res = lplr.Backpack:FindFirstChild("Gun", true) or lplr.Character:FindFirstChild("Gun", true)
@@ -221,6 +225,76 @@ tabs.Server:CreateButton("Kill all Zombies", function()
     end
 end)
 
+tabs.Server:CreateButton("Loop kill Zombies", function()
+
+end)
+
+
+tabs.Server:CreateButton("God Humans", function()
+    local remote = plrs:FindFirstChild("InflictTarget", true) or workspace:FindFirstChild("InflictTarget", true)
+
+    if lplr.Team == Teams.Zombie and remote then
+        for _, v in game.Players:GetPlayers() do
+            if v.Character and v.Character.PrimaryPart then
+                remote:FireServer(
+                    v.Character.Humanoid,
+                    v.Character.HumanoidRootPart,
+                    tonumber("nan"),
+                    Vector3.zero,
+                    2,
+                    0,
+                    false
+                )
+            end
+        end
+    else
+        gui:Notify("You need to be a Zombie")
+    end
+end)
+
+tabs.Server:CreateButton("Loop god Humans", function()
+
+end)
+
+tabs.Server:CreateButton("God Zombies", function()
+    local remote = plrs:FindFirstChild("InflictTarget", true) or workspace:FindFirstChild("InflictTarget", true)
+
+    if lplr.Team == Teams.Human and remote then
+        for _, v in game.Players:GetPlayers() do
+            if lplr ~= v and v.Character and v.Team ~= lplr.Team and v.Character.PrimaryPart then
+                remote:FireServer(
+                    v.Character.Humanoid,
+                    v.Character.HumanoidRootPart,
+                    tonumber("nan"),
+                    CFrame.new((lplr.Character.Humanoid.Torso.CFrame * CFrame.new(0, 1.5, 0)).Position, v.Character.Humanoid.RootPart.Position).LookVector,
+                    2,
+                    0,
+                    false
+                )
+            end
+        end
+
+        for _, v in game.workspace.Zombies:GetChildren() do
+            if v.Humanoid and v.HumanoidRootPart then
+                remote:FireServer(
+                    v.Humanoid,
+                    v.HumanoidRootPart,
+                    tonumber("nan"),
+                    2,
+                    0,
+                    false
+                )
+            end
+        end
+    else
+        gui:Notify("You need to be a Human") 
+    end
+end)
+
+tabs.Server:CreateButton("Loop god Zombies", function()
+
+end)
+
 tabs.Server:CreateButton("Lag Server", function(callback)   
     if lplr.Team == Teams.Human then
         local remotes = {}
@@ -258,59 +332,35 @@ tabs.Server:CreateButton("Lag Server", function(callback)
     end
 end)
 
-tabs.Server:CreateButton("God Humans", function()
-    local remote = plrs:FindFirstChild("InflictTarget", true) or workspace:FindFirstChild("InflictTarget", true)
-
-    if lplr.Team == Teams.Zombie and remote then
-        for _, v in game.Players:GetPlayers() do
-            if v.Character and v.Character.PrimaryPart then
-                remote:FireServer(
-                    v.Character.Humanoid,
-                    v.Character.HumanoidRootPart,
-                    tonumber("nan"),
-                    Vector3.zero,
-                    2,
-                    0,
-                    false
-                )
-            end
-        end
-    else
-        gui:Notify("You need to be a Zombie")
-    end
+tabs.Teleports:CreateButton("Human Spawn", function()
+    HumRootPart.CFrame = CFrame.new(105.75, 2.99802613, -0.499999225, 1, -8.66426153e-10, -3.10274369e-14, 8.66426153e-10, 1, 1.07621581e-07, 3.09341921e-14, -1.07621581e-07, 1)
 end)
 
-tabs.Server:CreateButton("God Zombies", function()
-    local remote = plrs:FindFirstChild("InflictTarget", true) or workspace:FindFirstChild("InflictTarget", true)
+tabs.Teleports:CreateButton("Zombie Spawn", function()
+    local SpawnPart = workspace.Spawns["Zombie spawn"]
+    HumRootPart.CFrame = CFrame.new(part.Position + Vector3.new(0,1,0))
+end)
 
-    if lplr.Team == Teams.Human and remote then
-        for _, v in game.Players:GetPlayers() do
-            if lplr ~= v and v.Character and v.Team ~= lplr.Team and v.Character.PrimaryPart then
-                remote:FireServer(
-                    v.Character.Humanoid,
-                    v.Character.HumanoidRootPart,
-                    tonumber("nan"),
-                    CFrame.new((lplr.Character.Humanoid.Torso.CFrame * CFrame.new(0, 1.5, 0)).Position, v.Character.Humanoid.RootPart.Position).LookVector,
-                    2,
-                    0,
-                    false
-                )
-            end
-        end
+tabs.Teleports:CreateButton("Storage Room", function()
+    HumRootPart.CFrame = CFrame.new(-54.3465996, 2.99999952, -81.0947189, -0.99999094, 7.06222991e-08, 0.00425474532, 7.06623453e-08, 1, 9.26277988e-09, -0.00425474532, 9.56334656e-09, -0.99999094)
+end)
 
-        for _, v in game.workspace.Zombies:GetChildren() do
-            if v.Humanoid and v.HumanoidRootPart then
-                remote:FireServer(
-                    v.Humanoid,
-                    v.HumanoidRootPart,
-                    tonumber("nan"),
-                    2,
-                    0,
-                    false
-                )
-            end
-        end
-    else
-        gui:Notify("You need to be a Human") 
-    end
+tabs.Teleports:CreateButton("Secruity Room", function()
+    HumRootPart.CFrame = CFrame.new(170.245407, 2.99999976, -8.37254906, 0.0092331497, -3.86767667e-08, -0.999957383, -5.77303751e-08, 1, -3.92114714e-08, 0.999957383, 5.80899595e-08, 0.0092331497)
+end)
+
+tabs.Teleports:CreateButton("Virus Room", function()
+    HumRootPart.CFrame = CFrame.new(-62.4210281, -15.5019751, -50.2964706, 0.999821723, 1.14813741e-08, 0.0188802816, -1.085618e-08, 1, -3.32160859e-08, -0.0188802816, 3.30052004e-08, 0.999821723)
+end)
+
+tabs.Teleports:CreateButton("Cure Room 1", function()
+    HumRootPart.CFrame = CFrame.new(-37.6837921, 2.99802589, -6.30242491, 0.999922574, 1.08432525e-08, 0.0124450261, -1.11559402e-08, 1, 2.50560799e-08, -0.0124450261, -2.51929766e-08, 0.999922574)
+end)
+
+tabs.Teleports:CreateButton("Cure Room 2", function()
+    HumRootPart.CFrame = CFrame.new(-89.5464096, -15.501976, 69.4817886, 0.999999881, 3.18905187e-08, 0.000427630963, -3.18826991e-08, 1, -1.82937399e-08, -0.000427630963, 1.82801045e-08, 0.999999881)
+end)
+
+tabs.Teleports:CreateButton("Outside the Map", function()
+    HumRootPart.CFrame = CFrame.new(40.5349503, 2.59802485, 1008.5954, -0.999989986, -1.50924251e-08, 0.00447067572, -1.54059911e-08, 1, -7.01038019e-08, -0.00447067572, -7.01719785e-08, -0.999989986)
 end)
