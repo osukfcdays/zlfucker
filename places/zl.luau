@@ -337,8 +337,7 @@ tabs.Teleports:CreateButton("Human Spawn", function()
 end)
 
 tabs.Teleports:CreateButton("Zombie Spawn", function()
-    local SpawnPart = workspace.Spawns["Zombie spawn"]
-    HumRootPart.CFrame = CFrame.new(part.Position + Vector3.new(0,1,0))
+    HumRootPart.CFrame = CFrame.new(-71.5, 3.00000072, 88, 1, 7.86415413e-08, 1.74437667e-13, -7.86415413e-08, 1, 4.34707594e-08, -1.71019069e-13, -4.34707594e-08, 1)
 end)
 
 tabs.Teleports:CreateButton("Storage Room", function()
