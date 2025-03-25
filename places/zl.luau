@@ -1,9 +1,10 @@
 local emptyFunc = function() end
 local cons = gui.cons
 local tabs = {
-    Player = true,
-    Server = true,
     Items = true,
+    Teams = true,
+    Client = true,
+    Server = true,
     Teleports = true,
     Extra = true
 }
@@ -55,7 +56,13 @@ do
     end))
 end
 
-tabs.Player:CreateButton("Destroy Zones", function()
+tabs.Client:CreateButton("Walkspeed Bypass", function()
+    for _, c in getconnections(lplr.Character.Humanoid:GetPropertyChangedSignal("WalkSpeed")) do
+        c:Disable()
+    end
+end)
+
+tabs.Client:CreateButton("Destroy Zones", function()
     for _, v in {starGui:FindFirstChild("PlayerLocalScripts(ReOnSp)"), lplr.PlayerGui:FindFirstChild("PlayerLocalScripts(ReOnSp)")} do
         if v then
             for _, v in v:GetChildren() do
@@ -69,12 +76,6 @@ tabs.Player:CreateButton("Destroy Zones", function()
     workspace.AntiGlitch:Destroy()
     workspace.ZombieBlockers:Destroy()
     workspace["Map Wall"].BaseWalls:Destroy()
-end)
-
-tabs.Player:CreateButton("Walkspeed Bypass", function()
-    for _, c in getconnections(lplr.Character.Humanoid:GetPropertyChangedSignal("WalkSpeed")) do
-        c:Disable()
-    end
 end)
 
 do
@@ -111,9 +112,24 @@ do
             lplr.Character.Humanoid:EquipTool(gun)
         end
     end
+    tabs.Client:CreateButton("God Gun", modGun, godGun)
+    tabs.Client:CreateButton("Spam Gun", modGun, spamGun)
+end
 
-    tabs.Player:CreateButton("Spam Gun", modGun, spamGun)
-    tabs.Player:CreateButton("God Gun", modGun, godGun)
+tabs.Client:CreateToggle("Ragdoll", function()
+    local Event = rStor.Remotes:FindFirstChild("ChangeState")
+    Event:FireServer("Ragdoll")
+end)
+
+do
+    tabs.Extra:CreateButton("Unlock Gamepass Machines", function()
+        for _, v in rStor.LocalFolder:GetChildren() do
+            if v.ClassName == "Model" then
+                v.Parent = workspace
+            end
+        end
+        gui:Notify("Gamepass Machines can be found in Spawn")
+    end)
 end
 
 local itemFuncs = {
@@ -141,7 +157,7 @@ do
                 itemFuncs[i]()
             end
         end
-        tabs.Player:CreateButton("Use " .. i, itemFuncs[i])
+        tabs.Teams:CreateButton("Use " .. i, itemFuncs[i])
     end
 
     local tCons = {}
@@ -171,20 +187,30 @@ do
     end)
 end
 
-do
-    tabs.Extra:CreateButton("Unlock Gamepass Machines", function()
-        for _, v in rStor.LocalFolder:GetChildren() do
-            if v.ClassName == "Model" then
-                v.Parent = workspace
+tabs.Server:CreateToggle("Loop Kill Zombies", function(callback)
+    gui:Notify("Not finished")
+end)
+
+tabs.Server:CreateButton("Kill all Zombies", function()
+    if lplr.Team == Teams.Human then
+        local remote = lplr.Backpack:FindFirstChild("InflictTarget", true) or lplr.Character:FindFirstChild("InflictTarget", true)
+
+        for _, v in game.Players:GetPlayers() do
+            if lplr ~= v and v.Character and v.Team ~= lplr.Team and v.Character.PrimaryPart then
+                remote:FireServer(
+                    v.Character.Humanoid,
+                    v.Character.HumanoidRootPart,
+                    v.Humanoid.Health,
+                    CFrame.new((lplr.Character.Humanoid.Torso.CFrame * CFrame.new(0, 1.5, 0)).Position, v.Character.Humanoid.RootPart.Position).LookVector,
+                    2,
+                    0,
+                    false
+                )
             end
         end
-        gui:Notify("Gamepass Machines can be found in Spawn")
-    end)
-end
-
-tabs.Extra:CreateToggle("Ragdoll", function()
-    local Event = rStor.Remotes:FindFirstChild("ChangeState")
-    Event:FireServer("Ragdoll")
+    else
+        gui:Notify("You need to be Human")
+    end
 end)
 
 tabs.Server:CreateButton("Infect Humans", function()
@@ -202,33 +228,6 @@ tabs.Server:CreateButton("Infect Humans", function()
         gui:Notify("You need to be a Zombie")
     end
 end)
-
-tabs.Server:CreateButton("Kill all Zombies", function()
-    if lplr.Team == Teams.Human then
-        local remote = lplr.Backpack:FindFirstChild("InflictTarget", true) or lplr.Character:FindFirstChild("InflictTarget", true)
-
-        for _, v in game.Players:GetPlayers() do
-            if lplr ~= v and v.Character and v.Team ~= lplr.Team and v.Character.PrimaryPart then
-                remote:FireServer(
-                    v.Character.Humanoid,
-                    v.Character.HumanoidRootPart,
-                    9e9,
-                    CFrame.new((lplr.Character.Humanoid.Torso.CFrame * CFrame.new(0, 1.5, 0)).Position, v.Character.Humanoid.RootPart.Position).LookVector,
-                    2,
-                    0,
-                    false
-                )
-            end
-        end
-    else
-        gui:Notify("You need to be Human")
-    end
-end)
-
-tabs.Server:CreateToggle("Loop kill Zombies", function()
-
-end)
-
 
 tabs.Server:CreateButton("God Humans", function()
     local remote = plrs:FindFirstChild("InflictTarget", true) or workspace:FindFirstChild("InflictTarget", true)
@@ -252,8 +251,8 @@ tabs.Server:CreateButton("God Humans", function()
     end
 end)
 
-tabs.Server:CreateToggle("Loop god Humans", function()
-
+tabs.Server:CreateButton("UnGod Humans", function()
+    gui:Notify("Not finished")
 end)
 
 tabs.Server:CreateButton("God Zombies", function()
@@ -278,8 +277,8 @@ tabs.Server:CreateButton("God Zombies", function()
     end
 end)
 
-tabs.Server:CreateToggle("Loop god Zombies", function()
-
+tabs.Server:CreateButton("UnGod Zombies", function()
+    gui:Notify("Not finished")
 end)
 
 tabs.Server:CreateButton("God NPC Zombies", function()
@@ -299,8 +298,8 @@ tabs.Server:CreateButton("God NPC Zombies", function()
     end
 end)
 
-tabs.Server:CreateToggle("Loop God NPC Zombies", function()
-
+tabs.Server:CreateButton("UnGod NPC Zombies", function()
+    gui:Notify("Not finished")
 end)
 
 tabs.Server:CreateButton("Lag Server", function(callback)   
@@ -370,4 +369,4 @@ end)
 
 tabs.Teleports:CreateButton("Outside the Map", function()
     HumRootPart.CFrame = CFrame.new(40.5349503, 2.59802485, 1008.5954, -0.999989986, -1.50924251e-08, 0.00447067572, -1.54059911e-08, 1, -7.01038019e-08, -0.00447067572, -7.01719785e-08, -0.999989986)
-end)
+end)]
