@@ -260,7 +260,7 @@ tabs.Server:CreateButton("God Zombies", function()
 
     if lplr.Team == Teams.Human and remote then
         for _, v in game.Players:GetPlayers() do
-            if v.Team ~= lplr.Team and v.Character and v.Team ~= lplr.Team and v.Character.PrimaryPart then
+            if v.Team ~= lplr.Team and v.Character and v.Character.PrimaryPart then
                 remote:FireServer(
                     v.Character.Humanoid,
                     v.Character.HumanoidRootPart,
