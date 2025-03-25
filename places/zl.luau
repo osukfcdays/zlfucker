@@ -369,4 +369,4 @@ end)
 
 tabs.Teleports:CreateButton("Outside the Map", function()
     HumRootPart.CFrame = CFrame.new(40.5349503, 2.59802485, 1008.5954, -0.999989986, -1.50924251e-08, 0.00447067572, -1.54059911e-08, 1, -7.01038019e-08, -0.00447067572, -7.01719785e-08, -0.999989986)
-end)]
+end)
