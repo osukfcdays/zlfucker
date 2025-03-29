@@ -3,23 +3,6 @@ local lib = {}
 local coreGui = cloneref(game:GetService("CoreGui"))
 local assets = cloneref(game):GetObjects(getcustomasset(export_file))[1]
 
-local rand = Random.new(math.randomseed(tick()))
--- local genRandomStr = function()
---     local str = ""
-    
---     for _ = 1, 1000 do
---         str ..= string.char(rand:NextInteger(0, 127))
---     end
-
---     return str
--- end
-
--- local encryptObjNames = function(...)
---     for _, v in {...} do
---         v.Name = genRandomStr()
---     end
--- end
-
 local clearChildren = function(...)
     for _, v in {...} do
         for _, v in v:GetChildren() do
@@ -37,6 +20,7 @@ function lib:CreateGui(name)
 
     local cons = {}
     local tabs = {}
+    local tgls = {}
     local gFuncs = {
         cons = cons,
         tabs = tabs
@@ -49,7 +33,6 @@ function lib:CreateGui(name)
     sFrame.Draggable = true
     sFrame.Active = true
 
-    -- encryptObjNames(sGui, sFrame)
     clearChildren(sFrame.content.padding.stuf, sFrame.content.tabs)
 
     sFrame.top.TextLabel.Text = name
@@ -97,7 +80,6 @@ function lib:CreateGui(name)
             tFr.Visible = true
         end))
 
-        -- encryptObjNames(tFr, tBtn)
         clearChildren(tFr)
 
         local tFuncs = {}
@@ -116,7 +98,6 @@ function lib:CreateGui(name)
                 end))
             end
 
-            -- encryptObjNames(btn)
             return bFuncs
         end
 
@@ -129,6 +110,7 @@ function lib:CreateGui(name)
             btn.Parent = tFr
             
             if callback then
+                bFuncs.Function = callback
                 bFuncs.Enabled = false
                 table.insert(cons, btn.MouseButton1Click:Connect(function()
                     bFuncs.Enabled = not bFuncs.Enabled
@@ -137,7 +119,7 @@ function lib:CreateGui(name)
                 end))
             end
 
-            -- encryptObjNames(btn)
+            table.insert(tgls, bFuncs)
             return bFuncs
         end
 
@@ -152,6 +134,11 @@ function lib:CreateGui(name)
         for _, v in cons do
             if v then
                 v:Disconnect()
+            end
+        end
+        for _, v in tgls do
+            if v.Enabled then
+                coroutine.wrap(v.Function)()
             end
         end
     end

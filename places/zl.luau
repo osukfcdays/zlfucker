@@ -1,3 +1,5 @@
+-- dogshit ahh code under beware of da skibi
+
 local emptyFunc = function() end
 local cons = gui.cons
 local tabs = {
@@ -5,7 +7,6 @@ local tabs = {
     Teams = true,
     Client = true,
     Server = true,
-    Teleports = true,
     Extra = true
 }
 
@@ -18,22 +19,24 @@ local starGui : StarterGui = cloneref(game:GetService("StarterGui"))
 local starPlr : StarterPlayer = cloneref(game:GetService("StarterPlayer"))
 local rStor : ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
 local runServ : RunService = cloneref(game:GetService("RunService"))
-local Teams = game:GetService("Teams")
+local networkCli : NetworkClient = cloneref(game:GetService("NetworkClient"))
+local Teams : Teams = cloneref(game:GetService("Teams"))
+local TeleportService : TeleportService = cloneref(game:GetService("TeleportService"))
 
 local lplr = plrs.LocalPlayer
 local pStats = lplr:WaitForChild("stats")
-local char = lplr.Character
-local hum = char.HumanoidRootPart
-local HumRootPart = char.HumanoidRootPart
 
-local getGun = function()
-    local res = lplr.Backpack:FindFirstChild("Gun", true) or lplr.Character:FindFirstChild("Gun", true)
-    return ((res and res.Parent) or nil)
-end
+local find = {
+    Gun = "InflictTarget",
+    Knife = "Animations",
+    Infect = "Infect"
+}
 
-local getKnife = function()
-    local res = lplr.Backpack:FindFirstChild("SecondaryEquipment", true) or lplr.Character:FindFirstChild("SecondaryEquipment", true)
-    return ((res and res.Parent) or nil)
+for i, v in find do
+    find[i] = function(recurs)
+        local res = (recurs and (plrs:FindFirstChild(v, true) or workspace:FindFirstChild(v, true))) or (lplr.Backpack:FindFirstChild(v, true) or lplr.Character:FindFirstChild(v, true))
+        return ((res and res.Parent.Parent) or nil)
+    end
 end
 
 do
@@ -54,13 +57,9 @@ do
             chr:WaitForChild(v):Destroy()
         end
     end))
+    networkCli:SetOutgoingKBPSLimit(tonumber("-inf")) -- experimental
 end
 
-tabs.Client:CreateButton("Walkspeed Bypass", function()
-    for _, c in getconnections(lplr.Character.Humanoid:GetPropertyChangedSignal("WalkSpeed")) do
-        c:Disable()
-    end
-end)
 
 tabs.Client:CreateButton("Destroy Zones", function()
     for _, v in {starGui:FindFirstChild("PlayerLocalScripts(ReOnSp)"), lplr.PlayerGui:FindFirstChild("PlayerLocalScripts(ReOnSp)")} do
@@ -96,7 +95,7 @@ do
     spamGun.FireRate = 0
 
     local modGun = function(conf)
-        local gun = getGun()
+        local gun = find.Gun(true)
         assert(gun, "You dont have a gun")
 
         local mod = gun:FindFirstChild("Setting")
@@ -112,13 +111,12 @@ do
             lplr.Character.Humanoid:EquipTool(gun)
         end
     end
-    tabs.Client:CreateButton("God Gun", modGun, godGun)
-    tabs.Client:CreateButton("Spam Gun", modGun, spamGun)
+    tabs.Items:CreateButton("God Gun", modGun, godGun)
+    tabs.Items:CreateButton("Spam Gun", modGun, spamGun)
 end
 
 tabs.Client:CreateToggle("Ragdoll", function()
-    local Event = rStor.Remotes:FindFirstChild("ChangeState")
-    Event:FireServer("Ragdoll")
+    rStor.Remotes.ChangeState:FireServer("Ragdoll")
 end)
 
 do
@@ -142,13 +140,16 @@ do
         Cure = game:GetService("ReplicatedStorage").Remotes.GiveCure
     }
 
+    local transTbl = {
+        Virus = Teams.Zombie,
+        Cure = Teams.Human
+    }
+
     for i, v in itemRemotes do
         tabs.Items:CreateButton("Give " .. i, v.FireServer, v)
 
         itemFuncs[i] = function()
-            -- if not plrs.LocalPlayer.Backpack:FindFirstChild(i) then
-                v.FireServer(v)
-            -- end
+            v.FireServer(v)
             local res = plrs.LocalPlayer.Backpack:WaitForChild(i, 1)
             if res then
                 plrs.LocalPlayer.Backpack[i].Name ..= "_used"
@@ -157,7 +158,7 @@ do
                 itemFuncs[i]()
             end
         end
-        tabs.Teams:CreateButton("Use " .. i, itemFuncs[i])
+        tabs.Teams:CreateButton("Become " .. transTbl[i].Name, itemFuncs[i])
     end
 
     local tCons = {}
@@ -187,186 +188,185 @@ do
     end)
 end
 
-tabs.Server:CreateToggle("Loop Kill Zombies", function(callback)
-    gui:Notify("Not finished")
-end)
-
-tabs.Server:CreateButton("Kill all Zombies", function()
-    if lplr.Team == Teams.Human then
-        local remote = lplr.Backpack:FindFirstChild("InflictTarget", true) or lplr.Character:FindFirstChild("InflictTarget", true)
-
-        for _, v in game.Players:GetPlayers() do
-            if lplr ~= v and v.Character and v.Team ~= lplr.Team and v.Character.PrimaryPart then
-                remote:FireServer(
-                    v.Character.Humanoid,
-                    v.Character.HumanoidRootPart,
-                    v.Humanoid.Health,
-                    CFrame.new((lplr.Character.Humanoid.Torso.CFrame * CFrame.new(0, 1.5, 0)).Position, v.Character.Humanoid.RootPart.Position).LookVector,
-                    2,
-                    0,
-                    false
-                )
-            end
-        end
-    else
-        gui:Notify("You need to be Human")
+local changeTeam
+do
+    local transTbl = {
+        Zombie = itemFuncs.Virus,
+        Human = itemFuncs.Cure
+    }
+    changeTeam = function(t)
+        return transTbl[t.Name]()
     end
-end)
+end
 
-tabs.Server:CreateButton("Infect Humans", function()
-    if lplr.Team == Teams.Zombie and not lplr.Character:FindFirstChild("Infect") then gui:Notify("Equip your Infect tool") end
-    if lplr.Team == Teams.Zombie then 
-        lplr.Character.Infect.Activated:Connect(function()
-        for _, v in game.Players:GetPlayers() do
-            if lplr ~= v and v.Character and v.Team ~= lplr.Team and v.Character.PrimaryPart then
-            firetouchinterest(lplr.Character.RightHand, v.Character.PrimaryPart, 0)
-            firetouchinterest(lplr.Character.RightHand, v.Character.PrimaryPart, 1)
-        end
-        end
-        end)
-    else
-        gui:Notify("You need to be a Zombie")
+local checkTeam = function(v)
+    if lplr.Team ~= v then
+        changeTeam(v)
+
+        repeat
+            task.wait()
+        until lplr.Team == v
     end
-end)
+end
 
-tabs.Server:CreateButton("God Humans", function()
-    local remote = plrs:FindFirstChild("InflictTarget", true) or workspace:FindFirstChild("InflictTarget", true)
-
-    if lplr.Team == Teams.Zombie and remote then
-        for _, v in game.Players:GetPlayers() do
-            if v.Team ~= lplr.Team and v.Character and v.Character.PrimaryPart then
-                remote:FireServer(
-                    v.Character.Humanoid,
-                    v.Character.HumanoidRootPart,
-                    tonumber("nan"),
-                    Vector3.zero,
-                    2,
-                    0,
-                    false
-                )
-            end
-        end
-    else
-        gui:Notify("You need to be a Zombie")
+local remote
+local findRemote = function()
+    if not remote or remote.Parent == nil then
+        remote = find.Gun(true)
+        assert(remote, "no gun in server")
+        remote = remote:FindFirstChild("InflictTarget", true)
     end
-end)
+end
 
-tabs.Server:CreateButton("UnGod Humans", function()
-    gui:Notify("Not finished")
-end)
+local shootPlr = function(v, dmg)
+    remote:FireServer(
+        v.Character.Humanoid,
+        v.Character.Humanoid.RootPart,
+        (dmg or v.Character.Humanoid.Health),
+        CFrame.new((lplr.Character.Humanoid.RootPart.CFrame * CFrame.new(0, 1.5, 0)).Position, v.Character.Humanoid.RootPart.Position).LookVector,
+        2,
+        0,
+        false
+    )
+end
 
-tabs.Server:CreateButton("God Zombies", function()
-    local remote = plrs:FindFirstChild("InflictTarget", true) or workspace:FindFirstChild("InflictTarget", true)
+do
+    local loopTbl = {}
+    local hookChr = function(p, c)
+        if p.Team ~= lplr.Team then
+            c:WaitForChild("Humanoid")
+            c:WaitForChild("HumanoidRootPart")
 
-    if lplr.Team == Teams.Human and remote then
-        for _, v in game.Players:GetPlayers() do
-            if v.Team ~= lplr.Team and v.Character and v.Character.PrimaryPart then
-                remote:FireServer(
-                    v.Character.Humanoid,
-                    v.Character.HumanoidRootPart,
-                    tonumber("nan"),
-                    CFrame.new((lplr.Character.Humanoid.Torso.CFrame * CFrame.new(0, 1.5, 0)).Position, v.Character.Humanoid.RootPart.Position).LookVector,
-                    2,
-                    0,
-                    false
-                )
-            end
-        end
-    else
-        gui:Notify("You need to be a Human") 
-    end
-end)
+            repeat
+                task.wait()
+            until not c:FindFirstChild("ForceField")
 
-tabs.Server:CreateButton("UnGod Zombies", function()
-    gui:Notify("Not finished")
-end)
-
-tabs.Server:CreateButton("God NPC Zombies", function()
-    local remote = lplr.Backpack:FindFirstChild("InflictTarget", true) or lplr.Character:FindFirstChild("InflictTarget", true)
-        
-    for _, v in game.workspace.Zombies:GetChildren() do
-        if v.Humanoid and v.HumanoidRootPart then
-             remote:FireServer(
-                v.Humanoid,
-                v.HumanoidRootPart,
-                tonumber("nan"),
-                2,
-                0,
-                false
-            )
+            table.insert(loopTbl, p)
         end
     end
-end)
-
-tabs.Server:CreateButton("UnGod NPC Zombies", function()
-    gui:Notify("Not finished")
-end)
-
-tabs.Server:CreateButton("Lag Server", function(callback)   
-    if lplr.Team == Teams.Human then
-        local remotes = {}
-        
-        local gun = game.Players.LocalPlayer.Character:FindFirstChild("Gun", true) 
-        gun = (gun and gun.Parent) or gun
-        
-        if not gun then gui:Notify("Equip your Gun") end
-        
-        for _, v in plrs:GetPlayers() do
-            table.insert(remotes, v.Backpack:FindFirstChild("reload", true))
-            if v.Character then
-                table.insert(remotes, v.Character:FindFirstChild("reload", true))
-            end
+    local tCons = {}
+    local hookPlr = function(p)
+        if p.Character then
+            coroutine.wrap(hookChr)(p, p.Character)
         end
-        local chr = plrs.LocalPlayer.Character
-        local pistol = gun
-        local con
-        
-        game:GetService("NetworkClient"):SetOutgoingKBPSLimit(math.huge)
-    
-        while true do
-            if pistol.Parent ~= chr then con:Disconnect() end
-            for _, v in remotes do
-                if v then
-                    coroutine.wrap(function()
-                        v:FireServer()
-                    end)()
+        table.insert(tCons, p.CharacterAdded:Connect(function(c)
+            hookChr(p, c)
+        end))
+    end
+
+    local transTbl = {
+        Zombie = "Human",
+        Human = "Zombie"
+    }
+    for _, team in Teams:GetTeams() do
+        local tName = transTbl[team.Name]
+        tabs.Server:CreateButton("Kill " .. tName, function()
+            checkTeam(team)
+            findRemote()
+
+            for _, v in plrs:GetPlayers() do
+                if lplr ~= v and v.Character and v.Team ~= lplr.Team and v.Character.PrimaryPart then
+                    shootPlr(v)
                 end
             end
-            task.wait(.03)
-        end
-    else
-        gui:Notify("You need to be human")
+        end)
+
+        tabs.Server:CreateButton("God " .. tName, function()
+            checkTeam(team)
+            findRemote()
+            
+            for _, v in game.Players:GetPlayers() do
+                if v.Team ~= lplr.Team and v.Character and v.Character.PrimaryPart then
+                    shootPlr(v, tonumber("nan"))
+                end
+            end
+        end)
+
+        local deb
+        tabs.Server:CreateToggle("Loop Kill " .. transTbl[team.Name], function(v)
+            deb = v
+            if deb then
+                checkTeam(team)
+
+                table.insert(tCons, plrs.PlayerAdded:Connect(hookPlr))
+                for _, v in plrs:GetPlayers() do
+                    hookPlr(v)
+                end
+                
+                repeat
+                    findRemote()
+                    for i, v in loopTbl do
+                        if v.Character and v.Team ~= lplr.Team and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 then
+                            shootPlr(v)
+                        else
+                            table.remove(loopTbl, i)
+                        end
+                    end
+                    task.wait()
+                until not deb
+            else
+                for _, v in tCons do
+                    v:Disconnect()
+                end
+                table.clear(tCons)
+                table.clear(loopTbl)
+            end
+        end)
     end
+end
+
+tabs.Server:CreateButton("Infect Humans", function()
+    checkTeam(Teams.Zombie)
+    lplr.Character.Infect.Activated:Connect(function()
+        for _, v in plrs:GetPlayers() do
+            if lplr ~= v and v.Character and v.Team ~= lplr.Team and v.Character.PrimaryPart then
+                firetouchinterest(lplr.Character.RightHand, v.Character.PrimaryPart, 0)
+                firetouchinterest(lplr.Character.RightHand, v.Character.PrimaryPart, 1)
+            end
+        end
+    end)
+    gui:Notify("Equip and spam the infect tool to infect")
 end)
 
-tabs.Teleports:CreateButton("Human Spawn", function()
-    HumRootPart.CFrame = CFrame.new(105.75, 2.99802613, -0.499999225, 1, -8.66426153e-10, -3.10274369e-14, 8.66426153e-10, 1, 1.07621581e-07, 3.09341921e-14, -1.07621581e-07, 1)
-end)
+do
+    local remotes = {}
+    local tCons = {}
+    local warning
+    local tog
+    tog = tabs.Server:CreateToggle("Lag Server", function(callback)
+        if not warning then
+            warning = true
+            tog.Enabled = false
+            gui:Notify("Your ping will NOT recover, rejoin after disabling")
+            return
+        end
 
-tabs.Teleports:CreateButton("Zombie Spawn", function()
-    HumRootPart.CFrame = CFrame.new(-71.5, 3.00000072, 88, 1, 7.86415413e-08, 1.74437667e-13, -7.86415413e-08, 1, 4.34707594e-08, -1.71019069e-13, -4.34707594e-08, 1)
-end)
+        if callback then
+            for _, v in plrs:GetPlayers() do
+                table.insert(remotes, v.Backpack:FindFirstChild("reload", true))
+                if v.Character then
+                    table.insert(remotes, v.Character:FindFirstChild("reload", true))
+                end
+            end
 
-tabs.Teleports:CreateButton("Storage Room", function()
-    HumRootPart.CFrame = CFrame.new(-54.3465996, 2.99999952, -81.0947189, -0.99999094, 7.06222991e-08, 0.00425474532, 7.06623453e-08, 1, 9.26277988e-09, -0.00425474532, 9.56334656e-09, -0.99999094)
-end)
-
-tabs.Teleports:CreateButton("Secruity Room", function()
-    HumRootPart.CFrame = CFrame.new(170.245407, 2.99999976, -8.37254906, 0.0092331497, -3.86767667e-08, -0.999957383, -5.77303751e-08, 1, -3.92114714e-08, 0.999957383, 5.80899595e-08, 0.0092331497)
-end)
-
-tabs.Teleports:CreateButton("Virus Room", function()
-    HumRootPart.CFrame = CFrame.new(-62.4210281, -15.5019751, -50.2964706, 0.999821723, 1.14813741e-08, 0.0188802816, -1.085618e-08, 1, -3.32160859e-08, -0.0188802816, 3.30052004e-08, 0.999821723)
-end)
-
-tabs.Teleports:CreateButton("Cure Room 1", function()
-    HumRootPart.CFrame = CFrame.new(-37.6837921, 2.99802589, -6.30242491, 0.999922574, 1.08432525e-08, 0.0124450261, -1.11559402e-08, 1, 2.50560799e-08, -0.0124450261, -2.51929766e-08, 0.999922574)
-end)
-
-tabs.Teleports:CreateButton("Cure Room 2", function()
-    HumRootPart.CFrame = CFrame.new(-89.5464096, -15.501976, 69.4817886, 0.999999881, 3.18905187e-08, 0.000427630963, -3.18826991e-08, 1, -1.82937399e-08, -0.000427630963, 1.82801045e-08, 0.999999881)
-end)
-
-tabs.Teleports:CreateButton("Outside the Map", function()
-    HumRootPart.CFrame = CFrame.new(40.5349503, 2.59802485, 1008.5954, -0.999989986, -1.50924251e-08, 0.00447067572, -1.54059911e-08, 1, -7.01038019e-08, -0.00447067572, -7.01719785e-08, -0.999989986)
-end)
+            local packetSize = #remotes * 700
+            for i = 1, #remotes do
+                local v = remotes[i]
+                table.insert(tCons, runServ.PreRender:Connect(function()
+                    coroutine.wrap(function()
+                        for _ = 1, packetSize do
+                            coroutine.wrap(v.FireServer)(v)
+                        end
+                    end)()
+                end))
+            end
+        else
+            coroutine.wrap(TeleportService.TeleportToPlaceInstance)(TeleportService, game.PlaceId, game.JobId)
+            for _, v in tCons do
+                v:Disconnect()
+            end
+            table.clear(tCons)
+            table.clear(remotes)
+        end
+    end)
+end
