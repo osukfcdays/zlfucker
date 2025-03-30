@@ -1,3 +1,10 @@
+repo = "https://raw.githubusercontent.com/osukfcdays/zlfucker/refs/heads/main/"
+dev = isfolder("zlfucker")
+if dev then
+    coroutine.wrap(loadfile("zlfucker/.luau"))()
+    return
+end
+
 newcclosure = newcclosure or function(...) return ... end
 
 if getgenv().zlfucker then
@@ -71,3 +78,4 @@ for i, v in index do
 end
 
 gui:Notify("incompatible game, ask for support for the game in the discord server")
+gui:Destruct()
