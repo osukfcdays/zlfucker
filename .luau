@@ -1,6 +1,7 @@
 repo = "https://raw.githubusercontent.com/osukfcdays/zlfucker/refs/heads/main/"
 dev = isfolder("zlfucker")
-if dev then
+if dev and not loadedDevFile then
+    loadedDevFile = true
     coroutine.wrap(loadfile("zlfucker/.luau"))()
     return
 end
@@ -78,4 +79,3 @@ for i, v in index do
 end
 
 gui:Notify("incompatible game, ask for support for the game in the discord server")
-gui:Destruct()
