@@ -198,7 +198,7 @@ do
     changeTeam = function(t)
         return transTbl[t.Name]()
     end
-end
+end]]
 
 local checkTeam = function(v)
     if lplr.Team ~= v then
@@ -208,7 +208,7 @@ local checkTeam = function(v)
             task.wait()
         until lplr.Team == v
     end
-end]]
+end
 
 local remote
 local findRemote = function()
