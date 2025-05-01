@@ -1,3 +1,4 @@
+-- rip changeteam and get cure/virus for now
 -- retards comment below.
 -- dogshit ahh code under beware of da skibi
 
@@ -198,7 +199,7 @@ do
     changeTeam = function(t)
         return transTbl[t.Name]()
     end
-end]]
+end
 
 local checkTeam = function(v)
     if lplr.Team ~= v then
@@ -207,6 +208,12 @@ local checkTeam = function(v)
         repeat
             task.wait()
         until lplr.Team == v
+    end
+end]]
+
+local checkTeam = function(v)
+    if lplr.Team ~= v then
+        gui:Notify("You need to be on the other team")
     end
 end
 
