@@ -1,10 +1,11 @@
+-- retards comment below.
 -- dogshit ahh code under beware of da skibi
 
 local emptyFunc = function() end
 local cons = gui.cons
 local tabs = {
     Items = true,
-    Teams = true,
+    --Teams = true,
     Client = true,
     Server = true,
     Extra = true
@@ -130,14 +131,14 @@ do
     end)
 end
 
-local itemFuncs = {
+--[[local itemFuncs = { 
     Virus = emptyFunc,
     Cure = emptyFunc
 }
 do
     local itemRemotes = {
-        Virus = game:GetService("ReplicatedStorage").Remotes.GiveVirus,
-        Cure = game:GetService("ReplicatedStorage").Remotes.GiveCure
+        Virus = game:GetService("ReplicatedStorage").Remotes.VirusMachine,
+        Cure = game:GetService("ReplicatedStorage").Remotes.CureMachine
     }
 
     local transTbl = {
@@ -207,7 +208,7 @@ local checkTeam = function(v)
             task.wait()
         until lplr.Team == v
     end
-end
+end]]
 
 local remote
 local findRemote = function()
