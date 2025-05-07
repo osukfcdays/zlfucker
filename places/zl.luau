@@ -1,14 +1,26 @@
 -- dogshit ahh code under beware of da skibi
+-- if curious, you may request this script to be documented
 
 local emptyFunc = function() end
 local cons = gui.cons
 local tabs = {
     Items = true,
-    Teams = true,
+    -- Teams = true,
     Client = true,
     Server = true,
     Extra = true
 }
+
+do
+    local tab = gui:CreateTab("Changelog")
+    local btn : TextButton = tab:CreateButton("test").inst
+    btn.Size = UDim2.new(1, 0, 1, 0)
+    btn.TextScaled = false
+    btn.TextYAlignment = Enum.TextYAlignment.Top
+    btn.TextSize = 24
+    btn.Text = [[Due to a recent update the cure/virus modules have been broken.
+    As of right now there is nothing we can do until the developer fixes them.]]
+end
 
 for i, v in tabs do
     tabs[i] = gui:CreateTab(i)
@@ -134,79 +146,80 @@ local itemFuncs = {
     Virus = emptyFunc,
     Cure = emptyFunc
 }
-do
-    local itemRemotes = {
-        Virus = game:GetService("ReplicatedStorage").Remotes.GiveVirus,
-        Cure = game:GetService("ReplicatedStorage").Remotes.GiveCure
-    }
+-- do
+--     local itemRemotes = {
+--         Virus = game:GetService("ReplicatedStorage").Remotes.GiveVirus,
+--         Cure = game:GetService("ReplicatedStorage").Remotes.GiveCure
+--     }
 
-    local transTbl = {
-        Virus = Teams.Zombie,
-        Cure = Teams.Human
-    }
+--     local transTbl = {
+--         Virus = Teams.Zombie,
+--         Cure = Teams.Human
+--     }
 
-    for i, v in itemRemotes do
-        tabs.Items:CreateButton("Give " .. i, v.FireServer, v)
+--     for i, v in itemRemotes do
+--         tabs.Items:CreateButton("Give " .. i, v.FireServer, v)
 
-        itemFuncs[i] = function()
-            v.FireServer(v)
-            local res = plrs.LocalPlayer.Backpack:WaitForChild(i, 1)
-            if res then
-                plrs.LocalPlayer.Backpack[i].Name ..= "_used"
-                res:WaitForChild("UseSelf"):FireServer()
-            else
-                itemFuncs[i]()
-            end
-        end
-        tabs.Teams:CreateButton("Become " .. transTbl[i].Name, itemFuncs[i])
-    end
+--         itemFuncs[i] = function()
+--             v.FireServer(v)
+--             local res = plrs.LocalPlayer.Backpack:WaitForChild(i, 1)
+--             if res then
+--                 plrs.LocalPlayer.Backpack[i].Name ..= "_used"
+--                 res:WaitForChild("UseSelf"):FireServer()
+--             else
+--                 itemFuncs[i]()
+--             end
+--         end
+--         tabs.Teams:CreateButton("Become " .. transTbl[i].Name, itemFuncs[i])
+--     end
 
-    local tCons = {}
-    tabs.Extra:CreateToggle("Cure Autofarm", function(callback)
-        if callback then
-            local changed = true
-            table.insert(tCons, pStats.Credits:GetPropertyChangedSignal("Value"):Connect(function()
-                changed = true
-            end))
+--     local tCons = {}
+--     tabs.Extra:CreateToggle("Cure Autofarm", function(callback)
+--         if callback then
+--             local changed = true
+--             table.insert(tCons, pStats.Credits:GetPropertyChangedSignal("Value"):Connect(function()
+--                 changed = true
+--             end))
 
-            table.insert(tCons, runServ.PreRender:Connect(function()
-                if changed then
-                    changed = false
-                    itemFuncs.Cure()
-                end
-            end))
+--             table.insert(tCons, runServ.PreRender:Connect(function()
+--                 if changed then
+--                     changed = false
+--                     itemFuncs.Cure()
+--                 end
+--             end))
 
-            for _, v in tCons do
-                table.insert(cons, v)
-            end
-        elseif #tCons > 0 then
-            for _, v in tCons do
-                v:Disconnect()
-            end
-            table.clear(tCons)
-        end
-    end)
-end
+--             for _, v in tCons do
+--                 table.insert(cons, v)
+--             end
+--         elseif #tCons > 0 then
+--             for _, v in tCons do
+--                 v:Disconnect()
+--             end
+--             table.clear(tCons)
+--         end
+--     end)
+-- end
 
-local changeTeam
-do
-    local transTbl = {
-        Zombie = itemFuncs.Virus,
-        Human = itemFuncs.Cure
-    }
-    changeTeam = function(t)
-        return transTbl[t.Name]()
-    end
-end
+-- local changeTeam
+-- do
+--     local transTbl = {
+--         Zombie = itemFuncs.Virus,
+--         Human = itemFuncs.Cure
+--     }
+--     changeTeam = function(t)
+--         return transTbl[t.Name]()
+--     end
+-- end
 
 local checkTeam = function(v)
-    if lplr.Team ~= v then
-        changeTeam(v)
+    assert(lplr.Team == v, string.format("You must manually turn into a %s, due to the recent update.", v.Name))
+    -- if lplr.Team ~= v then
+    --     changeTeam(v)
 
-        repeat
-            task.wait()
-        until lplr.Team == v
-    end
+    --     repeat
+    --         task.wait()
+    --     until lplr.Team == v
+    -- end
 end
 
 local remote
@@ -222,7 +235,7 @@ local shootPlr = function(v, dmg)
     remote:FireServer(
         v.Character.Humanoid,
         v.Character.Humanoid.RootPart,
-        (dmg or v.Character.Humanoid.Health),
+        (dmg or v.Character.Humanoid.MaxHealth),
         CFrame.new((lplr.Character.Humanoid.RootPart.CFrame * CFrame.new(0, 1.5, 0)).Position, v.Character.Humanoid.RootPart.Position).LookVector,
         2,
         0,
@@ -296,7 +309,7 @@ do
                 repeat
                     findRemote()
                     for i, v in loopTbl do
-                        if v.Character and v.Team ~= lplr.Team and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 then
+                        if v.Character and v.Team ~= lplr.Team and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 and not v.Character:FindFirstChildWhichIsA("ForceField") then
                             shootPlr(v)
                         else
                             table.remove(loopTbl, i)
