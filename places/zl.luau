@@ -1,3 +1,5 @@
+-- rip changeteam and get cure/virus for now
+-- retards comment below.
 -- dogshit ahh code under beware of da skibi
 -- if curious, you may request this script to be documented
 
@@ -142,7 +144,7 @@ do
     end)
 end
 
-local itemFuncs = {
+--[[local itemFuncs = { 
     Virus = emptyFunc,
     Cure = emptyFunc
 }
