@@ -148,80 +148,80 @@ end
     Virus = emptyFunc,
     Cure = emptyFunc
 }
--- do
---     local itemRemotes = {
---         Virus = game:GetService("ReplicatedStorage").Remotes.GiveVirus,
---         Cure = game:GetService("ReplicatedStorage").Remotes.GiveCure
---     }
+do
+    local itemRemotes = {
+        Virus = game:GetService("ReplicatedStorage").Remotes.GiveVirus,
+        Cure = game:GetService("ReplicatedStorage").Remotes.GiveCure
+    }
 
---     local transTbl = {
---         Virus = Teams.Zombie,
---         Cure = Teams.Human
---     }
+    local transTbl = {
+        Virus = Teams.Zombie,
+        Cure = Teams.Human
+    }
 
---     for i, v in itemRemotes do
---         tabs.Items:CreateButton("Give " .. i, v.FireServer, v)
+    for i, v in itemRemotes do
+        tabs.Items:CreateButton("Give " .. i, v.FireServer, v)
 
---         itemFuncs[i] = function()
---             v.FireServer(v)
---             local res = plrs.LocalPlayer.Backpack:WaitForChild(i, 1)
---             if res then
---                 plrs.LocalPlayer.Backpack[i].Name ..= "_used"
---                 res:WaitForChild("UseSelf"):FireServer()
---             else
---                 itemFuncs[i]()
---             end
---         end
---         tabs.Teams:CreateButton("Become " .. transTbl[i].Name, itemFuncs[i])
---     end
+        itemFuncs[i] = function()
+            v.FireServer(v)
+            local res = plrs.LocalPlayer.Backpack:WaitForChild(i, 1)
+            if res then
+                plrs.LocalPlayer.Backpack[i].Name ..= "_used"
+                res:WaitForChild("UseSelf"):FireServer()
+            else
+                itemFuncs[i]()
+            end
+        end
+        tabs.Teams:CreateButton("Become " .. transTbl[i].Name, itemFuncs[i])
+    end
 
---     local tCons = {}
---     tabs.Extra:CreateToggle("Cure Autofarm", function(callback)
---         if callback then
---             local changed = true
---             table.insert(tCons, pStats.Credits:GetPropertyChangedSignal("Value"):Connect(function()
---                 changed = true
---             end))
+    local tCons = {}
+    tabs.Extra:CreateToggle("Cure Autofarm", function(callback)
+        if callback then
+            local changed = true
+            table.insert(tCons, pStats.Credits:GetPropertyChangedSignal("Value"):Connect(function()
+                changed = true
+            end))
 
---             table.insert(tCons, runServ.PreRender:Connect(function()
---                 if changed then
---                     changed = false
---                     itemFuncs.Cure()
---                 end
---             end))
+            table.insert(tCons, runServ.PreRender:Connect(function()
+                if changed then
+                    changed = false
+                    itemFuncs.Cure()
+                end
+            end))
 
---             for _, v in tCons do
---                 table.insert(cons, v)
---             end
---         elseif #tCons > 0 then
---             for _, v in tCons do
---                 v:Disconnect()
---             end
---             table.clear(tCons)
---         end
---     end)
--- end
+            for _, v in tCons do
+                table.insert(cons, v)
+            end
+        elseif #tCons > 0 then
+            for _, v in tCons do
+                v:Disconnect()
+            end
+            table.clear(tCons)
+        end
+    end)
+end
 
--- local changeTeam
--- do
---     local transTbl = {
---         Zombie = itemFuncs.Virus,
---         Human = itemFuncs.Cure
---     }
---     changeTeam = function(t)
---         return transTbl[t.Name]()
---     end
--- end
+local changeTeam
+do
+    local transTbl = {
+        Zombie = itemFuncs.Virus,
+        Human = itemFuncs.Cure
+    }
+    changeTeam = function(t)
+        return transTbl[t.Name]()
+    end
+end]]
 
 local checkTeam = function(v)
     assert(lplr.Team == v, string.format("You must manually turn into a %s, due to the recent update.", v.Name))
-    -- if lplr.Team ~= v then
-    --     changeTeam(v)
+    --[[if lplr.Team ~= v then
+        changeTeam(v)
 
-    --     repeat
-    --         task.wait()
-    --     until lplr.Team == v
-    -- end
+        repeat
+            task.wait()
+        until lplr.Team == v
+    end]]
 end
 
 local remote
