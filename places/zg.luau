@@ -46,15 +46,12 @@ local find = {
     Melee = "Hit"
 }
 
-local NameYourFuckingSignBetter = {
-    ZombieSign = "AngrySound"
-}
-
 local SignsTable = {
     AntiZombieSign = lplr:FindFirstChild("AntiZombieSign", true) or char:FindFirstChild("AntiZombieSign", true),
     AntiZombieSign2 = lplr:FindFirstChild("AntiZombieSign2", true) or char:FindFirstChild("AntiZombieSign2", true),
     AntiZombieSign3 = lplr:FindFirstChild("AntiZombieSign3", true) or char:FindFirstChild("AntiZombieSign", true),
     ZombieSign = lplr:FindFirstChild("ZombieSign", true) or char:FindFirstChild("ZombieSign", true)
+    ZombieSign2 =lplr:FindFirstChild("ZombieSign2", true) or char:FindFirstChild("ZombieSign2", true)
 }
 
 
@@ -62,13 +59,6 @@ for i,v in find do
     find[i] = function(FindItem)
         local FindingItem = (FindItem and (plrs:FindFirstChild(v, true) or char:FindFirstChild(v, true)))
     return ((FindingItem and FindingItem.Parent.Parent) or nil)
-    end
-end
-
-for i,v in NameYourFuckingSignBetter do
-    NameYourFuckingSignBetter[i] = function(FindSign)
-        local FindingSign = (FindSign and (workspace.Interaction:FindFirstChild(v, true)))
-    return ((FindingSign and FindingSign.Parent) or nil)
     end
 end
 
@@ -105,7 +95,7 @@ tabs.Client:CreateButton("Remove Barriers", function()
 end)
 
 tabs.Teams:CreateButton("Become Human", function()
-    if lplr.Team == 'Zombie' then
+    if lplr.Team == Zombie then
          plrs:Chat(";human")
     else
         gui:Notify("You are already a Human")
@@ -113,7 +103,7 @@ tabs.Teams:CreateButton("Become Human", function()
 end)
 
 tabs.Teams:CreateButton("Become Zombie", function()
-    if lplr.Team == 'Human' then
+    if lplr.Team == Human then
          plrs:Chat(";zombie") 
     else
         gui:Notify("You are already a Zombie")
@@ -129,10 +119,11 @@ tabs.Items:CreateButton("Give Antidote", function()
 end)
 
 tabs.Items:CreateButton("Unlock Fire Axe", function()
-    if not lplr:FindFirstChild("Fire Axe", true) and not char:FindFirstChild("Fire Axe", true) then
-        fireclickdetector(workspace.Interaction.Weapons["Fire Axe"].ClickDetector, 0)
+    if workspace.Interaction.UnlockedWeapons["Fire Axe"].head.Color ~= Color3.fromRGB(163,54,54) then
+        fireclickdetector(workspace.Interaction.Weapons["Fire Axe"].ClickDetector, 0) 
+        gui:Notify("The Fire Axe can be found in the Armory If you need to reEquip it.")
     else
-        gui:Notify("You already have a Fire Axe")
+        gui:Notify("You already have the Fire Axe, It can be found in the Armory.")
     end
 end)
 
@@ -145,13 +136,13 @@ tabs.Items:CreateButton("Give Rainbow Potion", function()
 end)
 
 tabs.Items:CreateButton("Give all Signs", function()
-    if SignsTable.AntiZombieSign and SignsTable.AntiZombieSign2 and SignsTable.AntiZombieSign3 and SignsTable.ZombieSign then
+    if SignsTable.AntiZombieSign and SignsTable.AntiZombieSign2 and SignsTable.AntiZombieSign3 and SignsTable.ZombieSign and SignsTable.ZombieSign2 then
         gui:Notify("You already have every sign")
     else
-            fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign.ClickDetector, 0)
-            fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign2.ClickDetector, 0)
-            fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign3.ClickDetector, 0)
-            fireclickdetector(workspace.Interaction.ZombieSign.ClickDetector, 0)
-            fireclickdetector(NameYourFuckingSignBetter.ZombieSign.ClickDetector, 0)
+        fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign.ClickDetector, 0)
+        fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign2.ClickDetector, 0)
+        fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign3.ClickDetector, 0)
+        fireclickdetector(workspace.Interaction.ZombieSign.ClickDetector, 0)
+        fireclickdetector(workspace.Interaction:GetChildren()[15].ClickDetector or workspace.Interaction:GetChildren()[16].ClickDetector, 0)
     end
 end)
