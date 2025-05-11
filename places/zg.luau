@@ -35,13 +35,6 @@ local lplr = plrs.LocalPlayer
 local char = lplr.Character
 
 
-
-
-local TeamsTable = {
-    human = plrs:Chat(";human"),
-    zombie = plrs:Chat(";zombie")
-}
-
 local find = {
     Melee = "Hit"
 }
@@ -55,28 +48,6 @@ for i,v in find do
     end
 end
 
-
-
-local changeTeam 
-do
-    local TeamsTable = {
-        human = plrs:Chat(";human"),
-        zombie = plrs:Chat(";zombie")
-    }
-    changeTeam = function(Team)
-        return TeamsTable[Team.Name]()
-    end
-end
-
-local Teamcheck = function(v)
-    if lplr.Team ~= v then
-        changeTeam(v)
-        
-        repeat
-            task.wait()
-        until lplr.Team == v
-    end
-end
 
 
 tabs.Client:CreateButton("Remove Barriers", function()
@@ -131,4 +102,3 @@ else
     gui:Notify("You already have every sign")
 end
 end)
-
