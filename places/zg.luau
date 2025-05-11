@@ -46,13 +46,6 @@ local find = {
     Melee = "Hit"
 }
 
-local SignsTable = {
-    AntiZombieSign = lplr:FindFirstChild("AntiZombieSign", true) or char:FindFirstChild("AntiZombieSign", true),
-    AntiZombieSign2 = lplr:FindFirstChild("AntiZombieSign2", true) or char:FindFirstChild("AntiZombieSign2", true),
-    AntiZombieSign3 = lplr:FindFirstChild("AntiZombieSign3", true) or char:FindFirstChild("AntiZombieSign", true),
-    ZombieSign = lplr:FindFirstChild("ZombieSign", true) or char:FindFirstChild("ZombieSign"),
-    ZombieSign2 = lplr:FindFirstChild("ZombieSign2", true) or char:FindFirstChild("ZombieSign2", true)
-}
 
 
 for i,v in find do
@@ -95,19 +88,11 @@ tabs.Client:CreateButton("Remove Barriers", function()
 end)
 
 tabs.Teams:CreateButton("Become Human", function()
-    if lplr.Team == Zombie then
-         plrs:Chat(";human")
-    else
-        gui:Notify("You are already a Human")
-    end
+    char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Dead)
 end)
 
 tabs.Teams:CreateButton("Become Zombie", function()
-    if lplr.Team == Human then
-         plrs:Chat(";zombie") 
-    else
-        gui:Notify("You are already a Zombie")
-    end
+    plrs:Chat(";zombie") 
 end)
 
 tabs.Items:CreateButton("Give Antidote", function()
@@ -136,13 +121,14 @@ tabs.Items:CreateButton("Give Rainbow Potion", function()
 end)
 
 tabs.Items:CreateButton("Give all Signs", function()
-    if SignsTable.AntiZombieSign and SignsTable.AntiZombieSign2 and SignsTable.AntiZombieSign3 and SignsTable.ZombieSign and SignsTable.ZombieSign2 then
-        gui:Notify("You already have every sign")
-    else
-        fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign.ClickDetector, 0)
-        fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign2.ClickDetector, 0)
-        fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign3.ClickDetector, 0)
-        fireclickdetector(workspace.Interaction.ZombieSign.ClickDetector, 0)
-        fireclickdetector(workspace.Interaction:GetChildren()[15].ClickDetector or workspace.Interaction:GetChildren()[16].ClickDetector, 0)
-    end
+if not lplr:FindFirstChild("AntiZombieSign", true) and not char:FindFirstChild("AntiZombieSign", true) and not lplr:FindFirstChild("AntiZombieSign2", true) and not char:FindFirstChild("AntiZombieSign2", true) and not lplr:FindFirstChild("AntiZombieSign3", true) and not char:FindFirstChild("AntiZombieSign", true) and not lplr:FindFirstChild("ZombieSign", true) and not char:FindFirstChild("ZombieSign") and not lplr:FindFirstChild("ZombieSign2", true) and not char:FindFirstChild("ZombieSign2", true) then
+    fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign.ClickDetector, 0)
+    fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign2.ClickDetector, 0)
+    fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign3.ClickDetector, 0)
+    fireclickdetector(workspace.Interaction.ZombieSign.ClickDetector, 0)
+    fireclickdetector(workspace.Interaction:GetChildren()[15].ClickDetector or workspace.Interaction:GetChildren()[16].ClickDetector, 0)
+else
+    gui:Notify("You already have every sign")
+end
 end)
+
