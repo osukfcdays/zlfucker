@@ -50,8 +50,8 @@ local SignsTable = {
     AntiZombieSign = lplr:FindFirstChild("AntiZombieSign", true) or char:FindFirstChild("AntiZombieSign", true),
     AntiZombieSign2 = lplr:FindFirstChild("AntiZombieSign2", true) or char:FindFirstChild("AntiZombieSign2", true),
     AntiZombieSign3 = lplr:FindFirstChild("AntiZombieSign3", true) or char:FindFirstChild("AntiZombieSign", true),
-    ZombieSign = lplr:FindFirstChild("ZombieSign", true) or char:FindFirstChild("ZombieSign", true),
-    ZombieSign2 =lplr:FindFirstChild("ZombieSign2", true) or char:FindFirstChild("ZombieSign2", true)
+    ZombieSign = lplr:FindFirstChild("ZombieSign", true) or char:FindFirstChild("ZombieSign"),
+    ZombieSign2 = lplr:FindFirstChild("ZombieSign2", true) or char:FindFirstChild("ZombieSign2", true)
 }
 
 
@@ -139,10 +139,10 @@ tabs.Items:CreateButton("Give all Signs", function()
     if SignsTable.AntiZombieSign and SignsTable.AntiZombieSign2 and SignsTable.AntiZombieSign3 and SignsTable.ZombieSign and SignsTable.ZombieSign2 then
         gui:Notify("You already have every sign")
     else
-        fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign.ClickDetector, 0),
-        fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign2.ClickDetector, 0),
-        fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign3.ClickDetector, 0),
-        fireclickdetector(workspace.Interaction.ZombieSign.ClickDetector, 0),
+        fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign.ClickDetector, 0)
+        fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign2.ClickDetector, 0)
+        fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign3.ClickDetector, 0)
+        fireclickdetector(workspace.Interaction.ZombieSign.ClickDetector, 0)
         fireclickdetector(workspace.Interaction:GetChildren()[15].ClickDetector or workspace.Interaction:GetChildren()[16].ClickDetector, 0)
     end
 end)
