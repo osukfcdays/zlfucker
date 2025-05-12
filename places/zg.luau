@@ -59,7 +59,7 @@ tabs.Teams:CreateButton("Become Zombie", function()
 end)
 
 tabs.Server:CreateButton("Lag Server", function()
-    gui:Notify("Your game might freeze for a minute, it's fine it'll unfreeze once they all spawn.)
+    gui:Notify("Your game might freeze for a minute, it's fine it'll unfreeze once they all spawn.")
     for LagServer = 1, 10000000 do
         game:GetService("ReplicatedStorage").NetworkEvents.RemoteEvent:FireServer("PLACE_LANDMINE")
     end
