@@ -50,20 +50,34 @@ end
 
 
 
-tabs.Client:CreateButton("Remove Barriers", function()
-    workspace.Interaction.ZombieDoor:Destroy()
-    workspace.Interaction.ZombieDoor2:Destroy()
-    workspace.Interaction.ZombieDoor3:Destroy()
-    workspace.Scripted.NoZombie.DisplayedBarrier:Destroy()
-    workspace.Scripted.NoZombie.ActualBarrier:Destroy()
-end)
-
 tabs.Teams:CreateButton("Become Human", function()
     char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Dead)
 end)
 
 tabs.Teams:CreateButton("Become Zombie", function()
     plrs:Chat(";zombie") 
+end)
+
+tabs.Server:CreateButton("Lag Server", function()
+    for LagServer = 1, 10000000 do
+        game:GetService("ReplicatedStorage").NetworkEvents.RemoteEvent:FireServer("PLACE_LANDMINE")
+    end
+end)
+
+tabs.Server:CreateButton("Sit nearby Zombies", function()
+    for _,v in workspace.LivingThings:GetChildren() do
+        if lplr and plrs ~= v and v.Name == "ZombieNpc" and "Necromancer" and "NpcSummonedZombie" then
+            v.Humanoid.Sit = true
+        end
+    end
+end)
+
+tabs.Client:CreateButton("Remove Barriers", function()
+    workspace.Interaction.ZombieDoor:Destroy()
+    workspace.Interaction.ZombieDoor2:Destroy()
+    workspace.Interaction.ZombieDoor3:Destroy()
+    workspace.Scripted.NoZombie.DisplayedBarrier:Destroy()
+    workspace.Scripted.NoZombie.ActualBarrier:Destroy()
 end)
 
 tabs.Items:CreateButton("Give Antidote", function()
