@@ -59,12 +59,14 @@ tabs.Teams:CreateButton("Become Zombie", function()
 end)
 
 tabs.Server:CreateButton("Lag Server", function()
+    gui:Notify("Your game might freeze for a minute, it's fine it'll unfreeze once they all spawn.)
     for LagServer = 1, 10000000 do
         game:GetService("ReplicatedStorage").NetworkEvents.RemoteEvent:FireServer("PLACE_LANDMINE")
     end
 end)
 
 tabs.Server:CreateButton("Sit nearby Zombies", function()
+    
     for _,v in workspace.LivingThings:GetChildren() do
         if lplr and plrs ~= v and v.Name == "ZombieNpc" and "Necromancer" and "NpcSummonedZombie" then
             v.Humanoid.Sit = true
