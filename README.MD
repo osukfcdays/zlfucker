@@ -1,5 +1,5 @@
 # ZLFucker
-A roblox script made to showcase vulnerabilities inside poorly created zombie laboratory games.<br>
+A roblox script made to showcase vulnerabilities inside poorly created games.<br>
 <img src="./conf/showcase.png"></img>
 
 ### Supported/Planned Games:
