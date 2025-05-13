@@ -60,7 +60,7 @@ end)
 
 tabs.Server:CreateButton("Lag Server", function()
     gui:Notify("Your game might freeze for a minute, it's fine it'll unfreeze once they all spawn.")
-    for LagServer = 1, 500000 do
+    for LagServer = 1, 2500000 do
         game:GetService("ReplicatedStorage").NetworkEvents.RemoteEvent:FireServer("PLACE_LANDMINE")
     end
 end)
