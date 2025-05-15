@@ -144,7 +144,7 @@ tabs.Weapons:CreateButton("Unlock Classic Sword", function() -- yes this method 
         GetHumRootPart(lplr.Character).CFrame = CFrame.new(-168.574799, 44.0623779, 88.8942108, -0.00475128274, -6.16009355e-10, 0.999988735, 1.60659113e-08, 1, 6.92350899e-10, -0.999988735, 1.60690181e-08, -0.00475128274)
         task.wait(0.1)
         fireproximityprompt(workspace.Interaction.SwordTouch.ProximityPrompt) 
-        task.wait(0.1)
+        task.wait(0.2)
         GetHumRootPart(lplr.Character).CFrame = CFrame.new(-81.5, 22.5, 66, 1, 0, 0, 0, 1, 0, 0, 0, 1)
     else 
         gui:Notify("You already have the sword, It can be found in the Armory.")
