@@ -1,6 +1,3 @@
--- rip changeteam and get cure/virus for now
--- retards comment below.
--- dogshit ahh code under beware of da skibi
 -- if curious, you may request this script to be documented
 
 local emptyFunc = function() end
@@ -10,7 +7,9 @@ local tabs = {
     -- Teams = true,
     Client = true,
     Server = true,
-    Extra = true
+    Teleports = true,
+    Gamepass = true,
+    --Extra = true
 }
 
 do
@@ -20,8 +19,12 @@ do
     btn.TextScaled = false
     btn.TextYAlignment = Enum.TextYAlignment.Top
     btn.TextSize = 24
-    btn.Text = [[Due to a recent update the cure/virus modules have been broken.
-    As of right now there is nothing we can do until the developer fixes them.]]
+    btn.Text = [[
+    + Added Teleports.
+    + Added Zombie Face/SkinColor changing.
+    + Fixed 'no desc passed issue'.
+    - Cure/Virus are still broken right now because of current update.
+    ]]
 end
 
 for i, v in tabs do
@@ -39,6 +42,11 @@ local TeleportService : TeleportService = cloneref(game:GetService("TeleportServ
 
 local lplr = plrs.LocalPlayer
 local pStats = lplr:WaitForChild("stats")
+
+function GetHumRootPart(char)
+    local HumRootPart = char:FindFirstChild("HumanoidRootPart")
+    return HumRootPart
+end
 
 local find = {
     Gun = "InflictTarget",
@@ -133,17 +141,6 @@ tabs.Client:CreateToggle("Ragdoll", function()
     rStor.Remotes.ChangeState:FireServer("Ragdoll")
 end)
 
-do
-    tabs.Extra:CreateButton("Unlock Gamepass Machines", function()
-        for _, v in rStor.LocalFolder:GetChildren() do
-            if v.ClassName == "Model" then
-                v.Parent = workspace
-            end
-        end
-        gui:Notify("Gamepass Machines can be found in Spawn")
-    end)
-end
-
 --[[local itemFuncs = { 
     Virus = emptyFunc,
     Cure = emptyFunc
@@ -214,7 +211,7 @@ do
 end]]
 
 local checkTeam = function(v)
-    assert(lplr.Team == v, string.format("You must manually turn into a %s, due to the recent update.", v.Name))
+    gui:Notify("You must manually turn into a " .. string.format(v.Name), lplr.Team == v)
     --[[if lplr.Team ~= v then
         changeTeam(v)
 
@@ -385,3 +382,55 @@ do
         end
     end)
 end
+-- level 100 boss's code above
+
+
+-- dogshit niggas code below
+tabs.Gamepass:CreateButton("Zombie face Gamepass", function()
+    lplr.PlayerGui.Main.ChooseFaceFrame.Visible = true
+end)
+
+tabs.Gamepass:CreateButton("Zombie skin color Gamepass", function()
+    lplr.PlayerGui.Main.ChooseColorFrame.Visible = true
+end)
+
+tabs.Gamepass:CreateButton("Cure/Virus machines Gamepass", function()
+    for _, v in rStor.LocalFolder:GetChildren() do
+        if v.ClassName == "Model" then
+            v.Parent = workspace
+        end
+    end
+    gui:Notify("Gamepass Machines are currently broken.")
+end)
+
+tabs.Teleports:CreateButton("Human Spawn", function()
+    GetHumRootPart(lplr.Character).CFrame = CFrame.new(108.507301, 2.99802589, 21.1811543, -0.999974489, 6.69067859e-08, -0.00714055588, 6.73346392e-08, 1, -5.96783067e-08, 0.00714055588, -6.01575962e-08, -0.999974489)
+end)
+
+tabs.Teleports:CreateButton("Zombie Spawn", function()
+    GetHumRootPart(lplr.Character).CFrame = CFrame.new(-77.0017929, 2.99802589, 88.050827, 0.999998748, -2.56961403e-08, 0.00158172031, 2.56525929e-08, 1, 2.75529164e-08, -0.00158172031, -2.75123071e-08, 0.999998748)
+end)
+
+tabs.Teleports:CreateButton("Virus Room", function()
+    GetHumRootPart(lplr.Character).CFrame = CFrame.new(-62.0080452, -15.501976, -51.7825928, 0.999956429, 2.60252282e-08, 0.00933171995, -2.59568829e-08, 1, -7.44509965e-09, -0.00933171995, 7.20255322e-09, 0.999956429)
+end)
+
+tabs.Teleports:CreateButton("Upstairs Cure room", function()
+    GetHumRootPart(lplr.Character).CFrame = CFrame.new(-37.5837288, 2.99802613, -6.82807255, 0.999866545, 2.99475147e-08, 0.0163355526, -3.00902876e-08, 1, 8.49411652e-09, -0.0163355526, -8.98452512e-09, 0.999866545)
+end)
+
+tabs.Teleports:CreateButton("Downstairs Cure room", function()
+    GetHumRootPart(lplr.Character).CFrame = CFrame.new(-89.571701, -15.5019779, 68.9455948, 0.999979734, -5.49140289e-09, -0.00636379281, 5.43602141e-09, 1, -8.71987904e-09, 0.00636379281, 8.68510863e-09, 0.999979734)
+end)
+
+tabs.Teleports:CreateButton("Secruity Room", function()
+    GetHumRootPart(lplr.Character).CFrame = CFrame.new(170.688843, 2.99802589, -7.46687269, -0.00315899728, -1.09685722e-07, -0.999994993, -1.74622983e-10, 1, -1.09685722e-07, 0.999994993, -1.74622983e-10, -0.00315899728)
+end)
+
+tabs.Teleports:CreateButton("Roof", function()
+    GetHumRootPart(lplr.Character).CFrame = CFrame.new(10.5755024, 25.498024, 32.7063293, -0.999892056, 1.2178937e-08, 0.0146923074, 1.24196662e-08, 1, 1.62934413e-08, -0.0146923074, 1.64741554e-08, -0.999892056)
+end)
+
+tabs.Teleports:CreateButton("Outside of Map", function()
+    GetHumRootPart(lplr.Character).CFrame = CFrame.new(40.5333252, 2.59802508, 1005.94537, -0.999990642, -3.43452164e-08, -0.00432587136, -3.4408604e-08, 1, 1.45791699e-08, 0.00432587136, 1.47278811e-08, -0.999990642)
+end)
