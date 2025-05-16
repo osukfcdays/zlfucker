@@ -43,7 +43,7 @@ local index = httpServ:JSONDecode(request({ -- indexs the json file to access th
 
 assert = function(i, msg) -- used to yield the current thread and display a message in the gui
     if not i then
-        coroutine.wrap(gui.Notify)(msg) -- notifies through the gui, without yielding incase that notify had tweens, waits, etc
+        coroutine.wrap(gui.Notify)(gui, msg) -- notifies through the gui, without yielding incase that notify had tweens, waits, etc
         error(msg) -- i dont know of any other way to yield the script through a function, other then a wait or loop which is hidious and doesnt end the script
     end
 end

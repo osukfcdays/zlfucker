@@ -3,6 +3,7 @@ local lib = {
 }
 local coreGui = cloneref(game:GetService("CoreGui")) -- cloneref coregui to prevent coregui detection through roblox vulns
 local assets = cloneref(game):GetObjects(getcustomasset(export_file))[1] -- loads up the assets through getobjects in a clonerefed state, getcustomasset imiates a rbxassetid:// with a local file
+local inputServ = cloneref(game:GetService("UserInputService"))
 
 local clearChildren = function(...) -- ease of access function to clear out non ui elements since the assets for the gui are built up in a gui
     for _, v in {...} do -- loops through your multiple provided paths
@@ -132,6 +133,7 @@ function lib:CreateGui(name)
     end
 
     function gFuncs:Destruct()
+        getgenv().zlfucker = nil
         sGui:Destroy() -- destroys the graphical element of the lib
         for _, v in cons do -- disconnects all the rbxcons, runserv, mousebuttontgls.
             if v then
@@ -173,6 +175,11 @@ function lib:CreateGui(name)
         sFrame.Size = UDim2.new(1, 0, 1, 0)
         -- gFuncs.Minimize()
     else
+        table.insert(cons, inputServ.InputBegan:Connect(function(key, chat)
+            if key.KeyCode == Enum.KeyCode.RightShift and not chat then
+                gFuncs:Minimize()
+            end
+        end))
         -- to replace this, .Active ruins mouse input, .Draggable is stupid in the big 2025
         sFrame.Draggable = true
         sFrame.Active = true
