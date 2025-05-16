@@ -190,21 +190,23 @@ tabs.Server:CreateButton("Spawn Zombies", function()
     game:GetService("ReplicatedStorage").Remotes.ZombieRelated.Necro.AbilityPlayer:FireServer()
 end)
 
+local Start 
 local tCons = {}
-tabs.Server:CreateToggle("Sit nearby Npc Zombies", function(StopSittingZombies)
-    if StopSittingZombies then
+tabs.Server:CreateToggle("Sit nearby Npc Zombies", function(v)
+    Start = v
 
-        for _,v in workspace.LivingThings:GetChildren() do
-            if v.Humanoid.DisplayName == "Npc" or v.Humanoid.DisplayName == "Summoned Zombie" then
-                v.Humanoid.Sit = true
+    if Start then
+        repeat 
+            for _,v in workspace.LivingThings:GetChildren() do
+                if v.Humanoid.DisplayName == "Npc" or v.Humanoid.DisplayName == "Summoned Zombie" then
+                    v.Humanoid.Sit = true
+                end
+                task.wait()
             end
-        end
-        for _, v in tCons do
-            table.insert(cons, v)
-        end
+        until not Start
     elseif #tCons > 0 then
         for _, v in tCons do
-            v:Disconnect()
+            Start:Disconnect()
         end
         table.clear(tCons)
     end
