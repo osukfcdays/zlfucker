@@ -211,7 +211,7 @@ do
 end]]
 
 local checkTeam = function(v)
-    gui:Notify("You must manually turn into a " .. string.format(v.Name), lplr.Team == v)
+    assert(lplr.Team == v, ("You must manually turn into a ".. string.format(v.Name))) -- ignore assrt also printing in console, this is only temp till catboy korean twink fixes his fucking remotes.
     --[[if lplr.Team ~= v then
         changeTeam(v)
 
