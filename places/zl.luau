@@ -117,7 +117,7 @@ do
     spamGun.FireRate = 0
 
     local modGun = function(conf)
-        local gun = find.Gun(true)
+        local gun = find.Gun()
         assert(gun, "You dont have a gun")
 
         local mod = gun:FindFirstChild("Setting")
