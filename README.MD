@@ -1,7 +1,7 @@
 # ZLFucker
 A roblox script made to showcase vulnerabilities inside poorly created games.
 
-<img src="https://github.com/osukfcdays/zlfucker/blob/main/conf/ZombieLabShowcase.png?raw=true"></img>
+<img src="https://github.com/osukfcdays/zlfucker/blob/main/conf/ZombieLabShowcase_old.png?raw=true"></img>
 <img src="https://github.com/osukfcdays/zlfucker/blob/main/conf/ZombieGameShowcase.png?raw=true"></img>
 ### Supported/Planned Games:
 * ✅ [Zombie lab](<https://www.roblox.com/games/6741970382/Zombie-lab-Optimization-Update>) by [@sulkang](<https://www.roblox.com/users/1031487406/profile/>)
