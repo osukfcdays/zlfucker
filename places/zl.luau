@@ -21,6 +21,7 @@ do
     btn.TextSize = 24
     btn.Text = [[
     + Added ESP
+    + Readded God Npc Zombies
     + Added Equip Scientist outfit
     + Added Equip Patient outfit
     - Cure/Virus are still broken right now because of current update.
@@ -349,6 +350,24 @@ do
             end
         end)
 
+        tabs.Server:CreateButton("God Npc Zombies", function()
+            checkTeam(team)
+            findRemote()
+
+            for _, v in game.workspace.Zombies:GetChildren() do
+                if v.Humanoid and v.HumanoidRootPart then
+                    remote:FireServer(
+                        v.Humanoid,
+                        v.HumanoidRootPart,
+                        tonumber("nan"),
+                        2,
+                        0,
+                        false
+                    )
+                end
+            end
+        end)
+
         local deb
         tabs.Server:CreateToggle("Loop Kill " .. transTbl[team.Name], function(v)
             deb = v
@@ -497,3 +516,4 @@ end)
 tabs.Extra:CreateButton("Patient outfit", function()
     fireclickdetector(workspace.Lab.Specials.Experimental.ClickPart.ClickDetector)
 end)
+
