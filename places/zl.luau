@@ -100,60 +100,62 @@ tabs.Client:CreateButton("Destroy Zones", function()
     workspace["Map Wall"].BaseWalls:Destroy()
 end)
 
-tabs.Client:CreateToggle("ESP", function(c)
-    if c then 
-        function AddHighlight(plr)
-            local highlight = Instance.new("Highlight")
-            highlight.Adornee = plr.Character
-            highlight.Parent = plr.Character 
-            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-            highlight.FillColor = plr.TeamColor.Color
-            highlight.OutlineColor = Color3.fromRGB(235,235,235)
-            highlight.FillTransparency = .3
-        
-            return highlight
-        end
-        
-        function RemoveHighlights(plr)
-            local res = plr.Character and plr.Character:FindFirstChildWhichIsA("Highlight")
-            if res then
-                res:Destroy()
-            end
-        end
-        
-        function ActuallyAddingHighlights(plr) 
-            local ratlight
-            plr.CharacterAdded:connect(function()
-                ratlight = AddHighlight(plr)
-            end)
-        
-            plr.CharacterRemoving:connect(function()
-                RemoveHighlights(plr)
-            end)
-        
-            plr:GetPropertyChangedSignal("TeamColor"):Connect(function()
-                if ratlight and ratlight.Parent then
-                    ratlight.FillColor = plr.TeamColor.Color or ratlight.FillColor
-                end
-            end)
-        
-            if plr.Character then
-                ratlight = AddHighlight(plr)
-            end
-        end
-        
-        for _,v in plrs:GetPlayers() do 
-            if lplr ~= v then
-                coroutine.wrap(ActuallyAddingHighlights)(v)
-            end
-        end
-        plrs.PlayerAdded:connect(ActuallyAddingHighlights)
-    else
-        for _, v in plrs:GetPlayers() do
-            coroutine.wrap(RemoveHighlights)(v)
+do
+    local function AddHighlight(plr)
+        local highlight = Instance.new("Highlight")
+        highlight.Adornee = plr.Character
+        highlight.Parent = plr.Character 
+        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        highlight.FillColor = plr.TeamColor.Color
+        highlight.OutlineColor = Color3.fromRGB(235,235,235)
+        highlight.FillTransparency = .3
+
+        return highlight
+    end
+
+    local function RemoveHighlights(plr)
+        local res = plr.Character and plr.Character:FindFirstChildWhichIsA("Highlight")
+        if res then
+            res:Destroy()
         end
     end
-end)
+
+    local function ActuallyAddingHighlights(plr) 
+        local ratlight
+        plr.CharacterAdded:connect(function()
+            ratlight = AddHighlight(plr)
+        end)
+
+        plr.CharacterRemoving:connect(function()
+            RemoveHighlights(plr)
+        end)
+
+        plr:GetPropertyChangedSignal("TeamColor"):Connect(function()
+            if ratlight and ratlight.Parent then
+                ratlight.FillColor = plr.TeamColor.Color or ratlight.FillColor
+            end
+        end)
+
+        if plr.Character then
+            ratlight = AddHighlight(plr)
+        end
+    end
+
+    tabs.Client:CreateToggle("ESP", function(c)
+        if c then
+            for _,v in plrs:GetPlayers() do 
+                if lplr ~= v then
+                    coroutine.wrap(ActuallyAddingHighlights)(v)
+                end
+            end
+            plrs.PlayerAdded:connect(ActuallyAddingHighlights)
+        else
+            for _, v in plrs:GetPlayers() do
+                coroutine.wrap(RemoveHighlights)(v)
+            end
+        end
+    end)
+end
 
 do
     local godGun = {
