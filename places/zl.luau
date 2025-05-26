@@ -9,7 +9,7 @@ local tabs = {
     Server = true,
     Teleports = true,
     Gamepass = true,
-    --Extra = true
+    Extra = true
 }
 
 do
@@ -20,9 +20,9 @@ do
     btn.TextYAlignment = Enum.TextYAlignment.Top
     btn.TextSize = 24
     btn.Text = [[
-    + Added Teleports.
-    + Added Zombie Face/SkinColor changing.
-    + Fixed 'no desc passed issue'.
+    + Added ESP
+    + Added Equip Scientist outfit
+    + Added Equip Patient outfit
     - Cure/Virus are still broken right now because of current update.
     ]]
 end
@@ -99,6 +99,61 @@ tabs.Client:CreateButton("Destroy Zones", function()
     workspace["Map Wall"].BaseWalls:Destroy()
 end)
 
+tabs.Client:CreateToggle("ESP", function(c)
+    if c then 
+        function AddHighlight(plr)
+            local highlight = Instance.new("Highlight")
+            highlight.Adornee = plr.Character
+            highlight.Parent = plr.Character 
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.FillColor = plr.TeamColor.Color
+            highlight.OutlineColor = Color3.fromRGB(235,235,235)
+            highlight.FillTransparency = .3
+        
+            return highlight
+        end
+        
+        function RemoveHighlights(plr)
+            local res = plr.Character and plr.Character:FindFirstChildWhichIsA("Highlight")
+            if res then
+                res:Destroy()
+            end
+        end
+        
+        function ActuallyAddingHighlights(plr) 
+            local ratlight
+            plr.CharacterAdded:connect(function()
+                ratlight = AddHighlight(plr)
+            end)
+        
+            plr.CharacterRemoving:connect(function()
+                RemoveHighlights(plr)
+            end)
+        
+            plr:GetPropertyChangedSignal("TeamColor"):Connect(function()
+                if ratlight and ratlight.Parent then
+                    ratlight.FillColor = plr.TeamColor.Color or ratlight.FillColor
+                end
+            end)
+        
+            if plr.Character then
+                ratlight = AddHighlight(plr)
+            end
+        end
+        
+        for _,v in plrs:GetPlayers() do 
+            if lplr ~= v then
+                coroutine.wrap(ActuallyAddingHighlights)(v)
+            end
+        end
+        plrs.PlayerAdded:connect(ActuallyAddingHighlights)
+    else
+        for _, v in plrs:GetPlayers() do
+            coroutine.wrap(RemoveHighlights)(v)
+        end
+    end
+end)
+
 do
     local godGun = {
         FireRate = 0.03,
@@ -117,7 +172,7 @@ do
     spamGun.FireRate = 0
 
     local modGun = function(conf)
-        local gun = find.Gun()
+        local gun = find.Gun(true)
         assert(gun, "You dont have a gun")
 
         local mod = gun:FindFirstChild("Setting")
@@ -433,4 +488,12 @@ end)
 
 tabs.Teleports:CreateButton("Outside of Map", function()
     GetHumRootPart(lplr.Character).CFrame = CFrame.new(40.5333252, 2.59802508, 1005.94537, -0.999990642, -3.43452164e-08, -0.00432587136, -3.4408604e-08, 1, 1.45791699e-08, 0.00432587136, 1.47278811e-08, -0.999990642)
+end)
+
+tabs.Extra:CreateButton("Scientist outfit", function()
+    fireclickdetector(workspace.Lab.Specials["Doctor/Physician"].ClickPart.ClickDetector)
+end)
+
+tabs.Extra:CreateButton("Patient outfit", function()
+    fireclickdetector(workspace.Lab.Specials.Experimental.ClickPart.ClickDetector)
 end)
