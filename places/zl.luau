@@ -352,24 +352,6 @@ do
             end
         end)
 
-        tabs.Server:CreateButton("God Npc Zombies", function()
-            checkTeam(team)
-            findRemote()
-
-            for _, v in game.workspace.Zombies:GetChildren() do
-                if v.Humanoid and v.HumanoidRootPart then
-                    remote:FireServer(
-                        v.Humanoid,
-                        v.HumanoidRootPart,
-                        tonumber("nan"),
-                        2,
-                        0,
-                        false
-                    )
-                end
-            end
-        end)
-
         local deb
         tabs.Server:CreateToggle("Loop Kill " .. transTbl[team.Name], function(v)
             deb = v
@@ -402,6 +384,24 @@ do
         end)
     end
 end
+
+tabs.Server:CreateButton("God Npc Zombies", function()
+    checkTeam(team)
+    findRemote()
+
+    for _, v in game.workspace.Zombies:GetChildren() do
+        if v.Humanoid and v.HumanoidRootPart then
+            remote:FireServer(
+                v.Humanoid,
+                v.HumanoidRootPart,
+                tonumber("nan"),
+                2,
+                0,
+                false
+            )
+        end
+    end
+end)
 
 tabs.Server:CreateButton("Infect Humans", function()
     checkTeam(Teams.Zombie)
