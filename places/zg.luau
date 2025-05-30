@@ -1,4 +1,4 @@
--- created by reret (osufckdays), qa tested by main dev
+-- srry if it errors, I don't test my code. Cheers, Reret2729.
 
 local emptyFunc = function() end
 local cons = gui.cons
@@ -18,20 +18,14 @@ do
     btn.TextYAlignment = Enum.TextYAlignment.Top
     btn.TextSize = 24
     btn.Text = [[
-    + Killaura
-    + Summon Zombies
-    + Unlock Classic Sword
-    + Unlock Fireaxe
-    + Get IronSword
-    + Become Zombie
-    + Become Human
-    + Lag Server
-    + Spawn Landmines
-    + Remove Barriers
-    + Give all Signs
-    + Give Antidote
-    + Give Rainbow Potion
-    + Sit nearby Zombies]]
+    + Lag server (Acid Edition)
+    + Acid rain
+    + Spawn acid
+    + Annoy server with Player hit sound spam
+    + Give Weapons
+    + Moved 'Unload Entities' to Client tab
+    - Unlock some Weapons
+    ]]
 end
 
 for i, v in tabs do
@@ -133,46 +127,16 @@ end)
 
 
 
-tabs.Weapons:CreateButton("Unlock Fire Axe", function()
-    if workspace.Interaction.UnlockedWeapons["Fire Axe"].head.Color ~= Color3.fromRGB(163,54,54) then
-        fireclickdetector(workspace.Interaction.Weapons["Fire Axe"].ClickDetector) 
-    else
-        gui:Notify("You already have the Fire Axe, It can be found in the Armory.")
+do
+    local ShopRemote = game:GetService("ReplicatedStorage").Remotes.Shop.EquipWeapon
+    for _,v in game:GetService("ReplicatedStorage").Assets.Weapons:GetChildren() do
+        if v:IsA("Tool") then
+            tabs.Weapons:CreateButton("Give ".. v.Name, function()
+                ShopRemote:InvokeServer(v.Name)
+            end)
+        end
     end
-end)
-
-tabs.Weapons:CreateButton("Unlock Classic Sword", function() -- yes this method was kinda half assed for CFrame shit.
-    local checkPath = workspace.Interaction.UnlockedWeapons["Classic Sword"].ProximityPrompt
-    
-    if workspace.Interaction.Grave:FindFirstChild("Part") then
-        workspace.Interaction.Grave.Part:Destroy()
-    end
-
-    if checkPath.ActionText ~= "Classic Sword" then
-        GetHumRootPart(lplr.Character).CFrame = CFrame.new(-168.574799, 44.0623779, 88.8942108, -0.00475128274, -6.16009355e-10, 0.999988735, 1.60659113e-08, 1, 6.92350899e-10, -0.999988735, 1.60690181e-08, -0.00475128274)
-        repeat
-            fireproximityprompt(workspace.Interaction.SwordTouch.ProximityPrompt)
-            task.wait()
-        until checkPath.ActionText == "Classic Sword"
-        GetHumRootPart(lplr.Character).CFrame = CFrame.new(-81.5, 22.5, 66, 1, 0, 0, 0, 1, 0, 0, 0, 1)
-    else 
-        gui:Notify("You already have the sword, It can be found in the Armory.")
-    end
-end)
-
-tabs.Weapons:CreateButton("Get Iron Sword", function()
-    local CheckPath = workspace.Interaction.Ironsword.SwordCollectPieces
-
-    if CheckPath:FindFirstChild("StickCollect") and CheckPath:FindFirstChild("IronOre1") and CheckPath:FindFirstChild("IronOre2") then
-        fireclickdetector(workspace.Interaction.Ironsword.SwordCollectPieces:WaitForChild("StickCollect"):WaitForChild("ClickDetector"))
-        fireclickdetector(workspace.Interaction.Ironsword.SwordCollectPieces:WaitForChild("IronOre1"):WaitForChild("ClickDetector"))
-        fireclickdetector(workspace.Interaction.Ironsword.SwordCollectPieces:WaitForChild("IronOre2"):WaitForChild("ClickDetector"))
-        fireclickdetector(workspace.Interaction.Ironsword.IronSword:WaitForChild("ClickDetector"))
-    else
-        fireclickdetector(workspace.Interaction.Ironsword.IronSword:WaitForChild("ClickDetector"))
-    end
-end)
-
+end
 
 
 tabs.Client:CreateButton("Remove Barriers", function()
@@ -182,6 +146,76 @@ tabs.Client:CreateButton("Remove Barriers", function()
     workspace.Scripted.NoZombie.DisplayedBarrier:Destroy()
     workspace.Scripted.NoZombie.ActualBarrier:Destroy()
 end)
+
+
+--[[do -- broke because game is SHIT, we fix later, not really needed with the current features
+    local function AddHighlight(plr)
+        local highlight = Instance.new("Highlight")
+        highlight.Adornee = plr.Character
+        highlight.Parent = plr.Character 
+        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        highlight.FillColor = plr.TeamColor.Color
+        highlight.OutlineColor = Color3.fromRGB(235,235,235)
+        highlight.FillTransparency = .3
+
+        return highlight
+    end
+
+    local function RemoveHighlights(plr)
+        local res = plr.Character and plr.Character:FindFirstChildWhichIsA("Highlight")
+        if res then
+            res:Destroy()
+        end
+    end
+
+    local function ActuallyAddingHighlights(plr) 
+        local ratlight
+        plr.CharacterAdded:connect(function()
+            ratlight = AddHighlight(plr)
+        end)
+
+        plr.CharacterRemoving:connect(function()
+            RemoveHighlights(plr)
+        end)
+
+        plr:GetPropertyChangedSignal("TeamColor"):Connect(function()
+            if ratlight and ratlight.Parent then
+                ratlight.FillColor = plr.TeamColor.Color or ratlight.FillColor
+            end
+        end)
+
+        if plr.Character then
+            ratlight = AddHighlight(plr)
+        end
+    end
+
+    tabs.Client:CreateToggle("ESP", function(c)
+        if c then
+            for _,v in plrs:GetPlayers() do 
+                if lplr ~= v then
+                    coroutine.wrap(ActuallyAddingHighlights)(v)
+                end
+            end
+            plrs.PlayerAdded:connect(ActuallyAddingHighlights)
+        else
+            for _, v in plrs:GetPlayers() do
+                coroutine.wrap(RemoveHighlights)(v)
+            end
+        end
+    end)
+end]]
+
+local living = workspace.LivingThings
+tabs.Client:CreateToggle("Unload Entites", function(c)
+    lplr.Character.Parent = (c and workspace) or living
+    if c then
+        living.Parent = nil
+    else
+        living.Parent = workspace
+    end
+end)
+
+
 
 networkCli:SetOutgoingKBPSLimit(tonumber("-inf")) -- experimental
 local rastorThreads = 24
@@ -195,11 +229,22 @@ local lagServer = function(event, ...)
     end
 end
 
+local AcidThreads = 4
+local AcidlagServer = function(event, ...) -- Modify some values so acid lag server doesnt fucking crash roblox instantly, It still temp freezes but idgaf.
+    for _ = 1, AcidThreads do
+        coroutine.wrap(function(...)
+            for _ = 1, (AcidThreads * 20) do
+                coroutine.wrap(event.FireServer)(event, ...)
+            end
+        end)(...)
+    end
+end
+
 local rejoin = function()
     TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId)
 end
 
-tabs.Server:CreateToggle("Lag Server", function(c)
+tabs.Server:CreateToggle("Lag Server (Landmine Edition)", function(c)
     if c then
         workspace.Interaction.PlayerPlaced.Parent = nil
         lagServer(game:GetService("ReplicatedStorage").NetworkEvents.RemoteEvent, "PLACE_LANDMINE")
@@ -216,45 +261,86 @@ tabs.Server:CreateToggle("Lag Server (Necro Edition)", function(c)
     end
 end)
 
-tabs.Server:CreateButton("Summon Zombies", function()
-    game:GetService("ReplicatedStorage").Remotes.ZombieRelated.Necro.AbilityPlayer:FireServer()
+tabs.Server:CreateToggle("Lag Server (Acid Edition)", function(c) -- not reliable for server lagging as it only lasts about 1-2 minutes, but it does rape the shit out of anyone with low end devices causing them to crash most of the time.
+    if c then
+        gui:Notify("This method Isn't too reliable for lagging the server, It can crash players games on low end phones and laptops though.")
+        for coverX = -266, 378, 18 do 
+        for coverZ = -268, 378, 18 do
+            AcidlagServer(game:GetService("ReplicatedStorage").Remotes.ZombieRelated.AcidSpit, Vector3.new(coverX, 255, coverZ), Vector3.new(0,0,0))
+        end
+        end
+    else
+        rejoin()
+    end
+end)
+
+tabs.Server:CreateToggle("Acid rain", function(c)
+    if c then
+        while true do
+            task.wait(0.3)
+            for coverX = -266, 378, 18 do 
+            for coverZ = -268, 378, 18 do
+            game:GetService("ReplicatedStorage").Remotes.ZombieRelated.AcidSpit:FireServer(Vector3.new(coverX, 255, coverZ), Vector3.new(0,0,0))
+            end
+            end
+            end
+    else
+        rejoin()
+    end
 end)
 
 tabs.Server:CreateButton("Summon Landmines", function()
     game:GetService("ReplicatedStorage").NetworkEvents.RemoteEvent:FireServer("PLACE_LANDMINE")
 end)
 
-local living = workspace.LivingThings
-tabs.Server:CreateToggle("Unload Entites", function(c)
-    lplr.Character.Parent = (c and workspace) or living
-    if c then
-        living.Parent = nil
-    else
-        living.Parent = workspace
+tabs.Server:CreateButton("Summon Zombies", function()
+    game:GetService("ReplicatedStorage").Remotes.ZombieRelated.Necro.AbilityPlayer:FireServer()
+end)
+
+tabs.Server:CreateButton("Summon Acid", function()
+    local AcidRemote = game:GetService("ReplicatedStorage").Remotes.ZombieRelated.AcidSpit
+
+    for coverX = -266, 378, 18 do
+        for coverZ = -268, 378, 18 do
+            AcidRemote:FireServer(
+                Vector3.new(coverX, 255, coverZ),
+                Vector3.new(0,0,0)
+            )
+        end
     end
 end)
 
-local Start 
-local tCons = {}
-tabs.Server:CreateToggle("Sit nearby Npc Zombies", function(v)
-    Start = v
-
-    if Start then
-        repeat 
-            for _, v in living:GetChildren() do
-                if v.Humanoid.DisplayName == "Npc" or v.Humanoid.DisplayName == "Summoned Zombie" then
-                    v.Humanoid.Sit = true
+do
+    local tgl
+    local event = rStor.Remotes.Melee.Damage
+    local eventC = 0
+    tgl = tabs.Server:CreateToggle("Annoy + Kill aura", function(c)
+        if c then
+            repeat
+                if lplr.Team == Teams.Zombie then
+                    event = rStor.Remotes.ZombieRelated.PlayerAttack
+                else
+                    plrs:Chat(";zombie")
+                end
+                if lplr.Character and lplr.Character:FindFirstChildWhichIsA("Tool") then
+                    for _, v in living:GetChildren() do
+                        if v:GetAttribute("Team") and v:GetAttribute("Team") ~= lplr.Character:GetAttribute("Team") then
+                        local hum = v:FindFirstChildWhichIsA("Humanoid")
+                            if eventC < 100 then
+                                coroutine.wrap(function()
+                                    eventC += 1
+                                    event:InvokeServer(hum.RootPart)
+                                    eventC -= 1
+                                end)()
+                            end
+                        end                
+                    end
                 end
                 task.wait()
-            end
-        until not Start
-    elseif #tCons > 0 then
-        for _, v in tCons do
-            Start:Disconnect()
+            until not tgl.Enabled
         end
-        table.clear(tCons)
-    end
-end)
+    end)
+end
 
 do
     local tgl
