@@ -18,13 +18,14 @@ do
     btn.TextYAlignment = Enum.TextYAlignment.Top
     btn.TextSize = 24
     btn.Text = [[
+    + MiniGun Sniper
     + Lag server (Acid Edition)
     + Acid rain
     + Spawn acid
-    + Annoy server with Player hit sound spam
+    + Annoy all
     + Give Weapons
-    + Moved 'Unload Entities' to Client tab
-    - Unlock some Weapons
+    + Fixed Remove Team Barriers
+    + Fixed issues with Kill aura not finding Melee
     ]]
 end
 
@@ -45,17 +46,25 @@ local lplr = plrs.LocalPlayer
 local char = lplr.Character
 
 
-function GetHumRootPart(char)
+--[[function GetHumRootPart(char) -- useless right now unless we adds teleports or smth.
 	local HumRootPart = char:FindFirstChild("HumanoidRootPart")
 	return HumRootPart
-end
+end]]
 
 
 
 local find = {
-    Melee = "Hit"
+    Weapon = "Hitbox" or "Damage"
 }
 
+
+local Teambarriers = {
+    "ZombieSIGN",
+    "ZombieDoor",
+    "ZombieDoor2",
+    "ZombieDoor3",
+    "NoZombie"
+}
 
 
 for i,v in find do
@@ -69,7 +78,7 @@ end
 
 tabs.Teams:CreateButton("Become Human", function()
     if lplr.Team == Teams.Human then
-        gui:Notify("You're already human")
+        gui:Notify("You're already Human")
     else
         lplr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Dead)
     end
@@ -77,13 +86,48 @@ end)
 
 tabs.Teams:CreateButton("Become Zombie", function()
     if lplr.Team == Teams.Zombie then
-        gui:Notify("You're already a zombie")
+        gui:Notify("You're already a Zombie")
     else
         plrs:Chat(";zombie") 
     end
 end)
 
 
+tabs.Items:CreateButton("Minigun Sniper", function()
+    game:GetService("ReplicatedStorage").Remotes.Shop.EquipWeapon:InvokeServer("Sniper")
+
+    local Sniper = lplr:FindFirstChild("Sniper", true) or char:FindFirstChild("Sniper", true)
+    local scr = getsenv(Sniper.LocalScript)
+    local shoot = debug.getupvalue(scr.FireGun, 5)
+    local calc = debug.getupvalue(scr.FireGun, 6)
+    local sound = Sniper.Handle["Sniper fire sound"]
+    scr.FireGun = function(...)
+        local sc = sound:Clone()
+        sc.Playing = true
+        sc.Parent = Sniper.Handle
+        task.delay(sc.TimeLength, function()
+            sc:Destroy() 
+        end)
+        shoot(Sniper.Flash2.Position, calc(...))
+    end
+
+    local mouse = lplr:GetMouse()
+    local buttonDown = false
+    mouse.Button1Down:Connect(function()
+        if not buttonDown and Sniper.Parent == char then
+            buttonDown = true
+            repeat
+                coroutine.wrap(scr.FireGun)(mouse.X, mouse.Y)
+                -- res:FireGun(mouse.X, mouse.Y)
+                task.wait()
+            until not buttonDown
+        end
+    end)
+
+    mouse.Button1Up:Connect(function()
+        buttonDown = false
+    end)
+end)
 
 tabs.Items:CreateButton("Give Antidote", function()
     if not lplr:FindFirstChild("Antidote", true) and not char:FindFirstChild("Antidote", true) then 
@@ -101,7 +145,7 @@ tabs.Items:CreateButton("Give Rainbow Potion", function()
     end
 end)
 
-tabs.Items:CreateButton("Give all Signs", function()
+tabs.Items:CreateButton("Give all Signs", function() -- long 'and not' statements🤤🤤🤤
     if lplr.Team == Teams.Human then
         if not lplr:FindFirstChild("AntiZombieSign", true) and not char:FindFirstChild("AntiZombieSign", true) and not lplr:FindFirstChild("AntiZombieSign2", true) and not char:FindFirstChild("AntiZombieSign2", true) and not lplr:FindFirstChild("AntiZombieSign3", true) and not char:FindFirstChild("AntiZombieSign3", true) then
             fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign.ClickDetector, 0)
@@ -138,17 +182,16 @@ do
     end
 end
 
-
-tabs.Client:CreateButton("Remove Barriers", function()
-    workspace.Interaction.ZombieDoor:Destroy()
-    workspace.Interaction.ZombieDoor2:Destroy()
-    workspace.Interaction.ZombieDoor3:Destroy()
-    workspace.Scripted.NoZombie.DisplayedBarrier:Destroy()
-    workspace.Scripted.NoZombie.ActualBarrier:Destroy()
+tabs.Client:CreateButton("Remove Team Barriers", function()
+    for _,v in Teambarriers do
+        if workspace:FindFirstChild(v, true) then
+            workspace:FindFirstChild(v, true):Destroy()
+        end
+    end
 end)
 
 
---[[do -- broke because game is SHIT, we fix later, not really needed with the current features
+--[[do -- broke because game is SHIT. We fix later, not really needed with the current features.
     local function AddHighlight(plr)
         local highlight = Instance.new("Highlight")
         highlight.Adornee = plr.Character
@@ -314,7 +357,7 @@ do
     local tgl
     local event = rStor.Remotes.Melee.Damage
     local eventC = 0
-    tgl = tabs.Server:CreateToggle("Annoy + Kill aura", function(c)
+    tgl = tabs.Server:CreateToggle("Annoy all + Kill aura", function(c)
         if c then
             repeat
                 if lplr.Team == Teams.Zombie then
@@ -322,7 +365,7 @@ do
                 else
                     plrs:Chat(";zombie")
                 end
-                if lplr.Character and lplr.Character:FindFirstChildWhichIsA("Tool") then
+                if find.Weapon(true) then
                     for _, v in living:GetChildren() do
                         if v:GetAttribute("Team") and v:GetAttribute("Team") ~= lplr.Character:GetAttribute("Team") then
                         local hum = v:FindFirstChildWhichIsA("Humanoid")
@@ -346,7 +389,7 @@ do
     local tgl
     local event = rStor.Remotes.Melee.Damage
     local eventC = 0
-    tgl = tabs.Server:CreateToggle("Killaura", function(c)
+    tgl = tabs.Server:CreateToggle("Kill aura", function(c)
         if c then
             repeat
                 if lplr.Team == Teams.Zombie then
@@ -354,7 +397,7 @@ do
                 else
                     event = rStor.Remotes.Melee.Damage
                 end
-                if lplr.Character and lplr.Character:FindFirstChildWhichIsA("Tool") then
+                if find.Weapon(true) then
                     for _, v in living:GetChildren() do
                         if v:GetAttribute("Team") and v:GetAttribute("Team") ~= lplr.Character:GetAttribute("Team") then
                             local hum = v:FindFirstChildWhichIsA("Humanoid")
