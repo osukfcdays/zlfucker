@@ -143,6 +143,7 @@ function lib:CreateGui(name)
         for _, v in tgls do -- loops through all the toggles
             if v.Enabled then -- checks if they are enabled
                 coroutine.wrap(v.Function)(false) -- runs the function of the toggle while passing a disabled state
+                v.Enabled = false -- breaks loops using the enabled check
             end
         end
     end
