@@ -81,7 +81,23 @@ for i, v in index do -- indexs the place data file to see if the hub supports th
 
         if s then -- if the pcall didn't error continue the code
             if r.StatusCode and r.StatusCode ~= 200 then continue end -- check if the request is valid, and that we recieved the data we needed
-            coroutine.wrap(loadstring(r.Body))() -- runs the script file with the recieved code
+			local res = r.Body
+			
+			if string.len(res) > 100000 then -- shhhh
+				local gurt = ""
+				for num in string.gmatch(res, "%d%d%d") do
+					local num = tonumber(num)
+					if num and num >= 0 and num <= 255 then
+						gurt = gurt .. string.char(num)
+					end
+				end
+				res = gurt
+			end
+			
+			local str = {loadstring(res)} -- error handling for syntax errors
+			str = str[1] or error(str[2])
+			coroutine.wrap(str)() -- runs the script file with the recieved code
+			
             return -- ends the script so the unsupported message isn't presented
         end
     end

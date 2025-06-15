@@ -177,7 +177,7 @@ function lib:CreateGui(name)
         -- gFuncs.Minimize()
     else
         table.insert(cons, inputServ.InputBegan:Connect(function(key, chat)
-            if key.KeyCode == Enum.KeyCode.RightShift and not chat then
+            if key.KeyCode == Enum.KeyCode.RightShift then
                 gFuncs:Minimize()
             end
         end))
