@@ -18,14 +18,14 @@ do
     btn.TextYAlignment = Enum.TextYAlignment.Top
     btn.TextSize = 24
     btn.Text = [[
-    + Fixed issues with Kill aura not working sometimes
+    + Minigun Sniper
     + Lag server (Acid Edition)
     + Acid rain
     + Spawn acid
     + Annoy all
     + Give Weapons
-    + Moved 'Unload Entities' to Client tab
-    - Unlock some Weapons
+    + Fixed Remove Team Barriers
+    + Fixed issues with Kill aura not finding Melee
     ]]
 end
 
@@ -58,6 +58,14 @@ local find = {
 }
 
 
+local Teambarriers = {
+    "ZombieSIGN",
+    "ZombieDoor",
+    "ZombieDoor2",
+    "ZombieDoor3",
+    "NoZombie"
+}
+
 
 for i,v in find do
     find[i] = function(FindItem)
@@ -85,6 +93,41 @@ tabs.Teams:CreateButton("Become Zombie", function()
 end)
 
 
+tabs.Items:CreateButton("Minigun Sniper", function()
+    game:GetService("ReplicatedStorage").Remotes.Shop.EquipWeapon:InvokeServer("Sniper")
+
+    local Sniper = lplr:FindFirstChild("Sniper", true) or char:FindFirstChild("Sniper", true)
+    local scr = getsenv(Sniper.LocalScript)
+    local shoot = debug.getupvalue(scr.FireGun, 5)
+    local calc = debug.getupvalue(scr.FireGun, 6)
+    local sound = Sniper.Handle["Sniper fire sound"]
+    scr.FireGun = function(...)
+        local sc = sound:Clone()
+        sc.Playing = true
+        sc.Parent = Sniper.Handle
+        task.delay(sc.TimeLength, function()
+            sc:Destroy() 
+        end)
+        shoot(Sniper.Flash2.Position, calc(...))
+    end
+
+    local mouse = lplr:GetMouse()
+    local buttonDown = false
+    mouse.Button1Down:Connect(function()
+        if not buttonDown and Sniper.Parent == char then
+            buttonDown = true
+            repeat
+                coroutine.wrap(scr.FireGun)(mouse.X, mouse.Y)
+                -- res:FireGun(mouse.X, mouse.Y)
+                task.wait()
+            until not buttonDown
+        end
+    end)
+
+    mouse.Button1Up:Connect(function()
+        buttonDown = false
+    end)
+end)
 
 tabs.Items:CreateButton("Give Antidote", function()
     if not lplr:FindFirstChild("Antidote", true) and not char:FindFirstChild("Antidote", true) then 
@@ -139,16 +182,12 @@ do
     end
 end
 
-tabs.Client:CreateButton("God Gun", function()
-
-end)
-
-tabs.Client:CreateButton("Remove Barriers", function()
-    workspace.Interaction.ZombieDoor:Destroy()
-    workspace.Interaction.ZombieDoor2:Destroy()
-    workspace.Interaction.ZombieDoor3:Destroy()
-    workspace.Scripted.NoZombie.DisplayedBarrier:Destroy()
-    workspace.Scripted.NoZombie.ActualBarrier:Destroy()
+tabs.Client:CreateButton("Remove Team Barriers", function()
+    for _,v in Teambarriers do
+        if workspace:FindFirstChild(v, true) then
+            workspace:FindFirstChild(v, true):Destroy()
+        end
+    end
 end)
 
 
@@ -226,7 +265,7 @@ local rastorThreads = 24
 local lagServer = function(event, ...)
     for _ = 1, rastorThreads do
         coroutine.wrap(function(...)
-            for _ = 1, (10000) do
+            for _ = 1, (rastorThreads * 1000) do
                 coroutine.wrap(event.FireServer)(event, ...)
             end
         end)(...)
@@ -316,29 +355,30 @@ end)
 
 do
     local tgl
-    local event = rStor.Remotes.Melee.Damage
+    local event = rStor.Remotes.ZombieRelated.PlayerAttack
     local eventC = 0
-    tgl = tabs.Server:CreateToggle("Annoy all + Kill aura", function(c)
-        gui:Notify("This only works If you have the 'Attack' tool Zombies have.")
+    local Attack = game:GetService("ReplicatedStorage").Attack:Clone()
+    tgl = tabs.Server:CreateToggle("Annoy all", function(c)
+        if not lplr:FindFirstChild("Attack", true) or char:FindFirstChild("Attack", true) then 
+            Attack.Parent = lplr:WaitForChild("Backpack") 
+        end
+
         if c then
             repeat
-                if lplr.Team == Teams.Zombie then
-                    event = rStor.Remotes.ZombieRelated.PlayerAttack
-                else
-                    plrs:Chat(";zombie")
-                end
                 if find.Weapon(true) then
                     for _, v in living:GetChildren() do
-                        if v:GetAttribute("Team") and v:GetAttribute("Team") ~= lplr.Character:GetAttribute("Team") then
-                        local hum = v:FindFirstChildWhichIsA("Humanoid")
-                            if eventC < 100 then
-                                coroutine.wrap(function()
-                                    eventC += 1
-                                    event:InvokeServer(hum.RootPart)
-                                    eventC -= 1
-                                end)()
+                        if lplr.Character ~= v then
+                            local hum = v:FindFirstChildWhichIsA("Humanoid")
+                            if hum and hum.Health > 0 and hum.RootPart then
+                                if eventC < 100 then
+                                    coroutine.wrap(function()
+                                        eventC += 1
+                                        event:InvokeServer(hum.RootPart)
+                                        eventC -= 1
+                                    end)()
+                                end
                             end
-                        end                
+                        end
                     end
                 end
                 task.wait()
@@ -347,11 +387,11 @@ do
     end)
 end
 
+
 do
     local tgl
     local event = rStor.Remotes.Melee.Damage
     local eventC = 0
-	local weapon
     tgl = tabs.Server:CreateToggle("Kill aura", function(c)
         if c then
             repeat
