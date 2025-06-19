@@ -88,6 +88,7 @@ do
     local tgl
     local event = rStor.Tools.Remotes.MeleeDamage
     local eventC = 0
+    local CheckRemote = rStor.Tools.Remotes.AttackStart
     tgl = tabs.Server:CreateToggle("Kill aura", function(c)
         if c then
             repeat
@@ -95,11 +96,12 @@ do
                     for _, v in Entities:GetChildren() do
                         if v:GetAttribute("Team") and v:GetAttribute("Team") ~= lplr.Character:GetAttribute("Team") then
                             local hum = v:FindFirstChildWhichIsA("Humanoid")
-                            if hum and hum.Health > 0 and hum.RootPart and (hum.RootPart.Position - lplr.Character.Humanoid.RootPart.Position).Magnitude <= 10 then
+                            if hum and hum.Health > 0 and hum.RootPart and (hum.RootPart.Position - lplr.Character.Humanoid.RootPart.Position).Magnitude <= 20 then
                                 if eventC < 100 then
                                     coroutine.wrap(function()
                                         eventC += 1
                                         event:FireServer(hum.RootPart)
+                                        CheckRemote:FireServer(workspace:GetServerTimeNow(), workspace.DistributedGameTime)
                                         eventC -= 1
                                     end)()
                                 end
@@ -112,6 +114,3 @@ do
         end
     end)
 end
-
-
-
