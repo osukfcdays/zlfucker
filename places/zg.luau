@@ -18,6 +18,7 @@ do
     btn.TextYAlignment = Enum.TextYAlignment.Top
     btn.TextSize = 24
     btn.Text = [[
+    + Loop kill Zombies
     + Minigun Sniper
     + Lag server (Acid Edition)
     + Acid rain
@@ -25,7 +26,6 @@ do
     + Annoy all
     + Give Weapons
     + Fixed Remove Team Barriers
-    + Fixed issues with Kill aura not finding Melee
     ]]
 end
 
@@ -54,7 +54,8 @@ end]]
 
 
 local find = {
-    Weapon = "Hitbox" or "Damage"
+    Weapon = "Hitbox" or "Damage",
+    Sniper = "M24" or "Mag" or "Bolt"
 }
 
 
@@ -344,10 +345,10 @@ tabs.Server:CreateButton("Summon Acid", function()
     local AcidRemote = game:GetService("ReplicatedStorage").Remotes.ZombieRelated.AcidSpit
 
     for coverX = -266, 378, 18 do
-        for coverZ = -268, 378, 18 do
-            AcidRemote:FireServer(
-                Vector3.new(coverX, 255, coverZ),
-                Vector3.new(0,0,0)
+    for coverZ = -268, 378, 18 do
+        AcidRemote:FireServer(
+            Vector3.new(coverX, 255, coverZ),
+            Vector3.new(0,0,0)
             )
         end
     end
@@ -409,6 +410,44 @@ do
                                     coroutine.wrap(function()
                                         eventC += 1
                                         event:InvokeServer(hum.RootPart)
+                                        eventC -= 1
+                                    end)()
+                                end
+                            end
+                        end
+                    end
+                end
+                task.wait()
+            until not tgl.Enabled
+        end
+    end)
+end
+
+
+do -- going from zombie to human with this enabled for some reason just bricks it entirely, I'll fix it sooner or later.
+    local tgl
+    local event = game:GetService("ReplicatedStorage"):WaitForChild("NetworkEvents"):WaitForChild("RemoteEvent")
+    local eventC = 0
+    tgl = tabs.Server:CreateToggle("Loop kill Zombies", function(c)
+        if c then
+            if lplr.Team == Teams.Zombie then
+                lplr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Dead)
+            end
+
+            if not find.Sniper(true) then 
+                game:GetService("ReplicatedStorage").Remotes.Shop.EquipWeapon:InvokeServer("Sniper")
+            end
+
+            repeat -- rapes ping after like 10 mins of use, prob should fix.
+                if find.Sniper(true) then
+                    for _, v in living:GetChildren() do
+                        if v:GetAttribute("Team") and v:GetAttribute("Team") ~= lplr.Character:GetAttribute("Team") then
+                            local hum = v:FindFirstChildWhichIsA("Humanoid")
+                            if hum and hum.Health > 0 and hum.RootPart then
+                                if eventC < 100 then
+                                    coroutine.wrap(function()
+                                        eventC += 1
+                                        event:FireServer("GUN_DAMAGE", hum.Parent)
                                         eventC -= 1
                                     end)()
                                 end
