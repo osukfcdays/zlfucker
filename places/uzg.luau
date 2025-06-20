@@ -2,7 +2,6 @@ local emptyFunc = function() end
 local cons = gui.cons
 local tabs = {
     Teams = true,
-    Items = true,
     Client = true,
     Server = true
 }
@@ -40,6 +39,11 @@ local char = lplr.Character
 local Entities = workspace.Entities
 
 
+function GetChar(lplr) -- ong we need a function for ts.
+	local FindChar = lplr.Character or lplr.CharacterAdded:wait()
+	return FindChar
+end
+
 
 local find = {
     Melee = "katana" or "machete" or "wooden_bat" or"charged_bat" or "flame_katana" or "crowbar" or "hatchet" or "Attack"
@@ -72,6 +76,20 @@ tabs.Teams:CreateButton("Become Zombie", function()
     lplr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Dead)
 end)
 
+do
+    local tgl
+    tgl = tabs.Client:CreateToggle("Infinite Stamina", function(c) -- https://www.youtube.com/watch?v=EVurkB9vZnI
+        if c then
+            repeat
+                if GetChar(lplr):GetAttribute("MaxStamina") ~= tonumber("inf") then
+                    GetChar(lplr):SetAttribute("MaxStamina", tonumber("inf"))
+                end
+                task.wait()
+            until not tgl.Enabled 
+            GetChar(lplr):SetAttribute("MaxStamina", 20)
+        end
+    end)
+end
 
 tabs.Client:CreateButton("Remove Team Barriers", function()
     for _,v in Barriers do
@@ -87,8 +105,8 @@ end)
 do
     local tgl
     local event = rStor.Tools.Remotes.MeleeDamage
-    local eventC = 0
     local CheckRemote = rStor.Tools.Remotes.AttackStart
+    local eventC = 0
     tgl = tabs.Server:CreateToggle("Kill aura", function(c)
         if c then
             repeat
@@ -114,3 +132,7 @@ do
         end
     end)
 end
+
+
+
+
