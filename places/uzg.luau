@@ -14,10 +14,12 @@ do
     btn.TextYAlignment = Enum.TextYAlignment.Top
     btn.TextSize = 24
     btn.Text = [[
-    Kill aura
-    Remove Team barriers
-    Become Human
-    Become Zombie
+    + OP Sprint
+    + Infinite Stamina
+    + Kill aura
+    + Remove Team barriers
+    + Become Human
+    + Become Zombie
     ]]
 end
 
@@ -91,6 +93,22 @@ do
     end)
 end
 
+do
+    local tgl
+    tgl = tabs.Client:CreateToggle("OP Sprint", function(c)
+        if c then
+            repeat
+                if GetChar(lplr):GetAttribute("SprintSpeed") ~= 50 then
+                    GetChar(lplr):SetAttribute("SprintSpeed", 50)
+                end
+                task.wait()
+            until not tgl.Enabled 
+            GetChar(lplr):SetAttribute("SprintSpeed", 6)
+        end
+    end)
+end
+
+
 tabs.Client:CreateButton("Remove Team Barriers", function()
     for _,v in Barriers do
         if workspace:FindFirstChild(v, true) then
@@ -132,7 +150,3 @@ do
         end
     end)
 end
-
-
-
-
