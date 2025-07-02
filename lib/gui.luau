@@ -2,7 +2,7 @@ local lib = {
     mobileSize = Vector2.new(800, 599) -- the minimum screen size till the gui switches into mobile scaling mode
 }
 local coreGui = cloneref(game:GetService("CoreGui")) -- cloneref coregui to prevent coregui detection through roblox vulns
-local assets = cloneref(game):GetObjects(getcustomasset(export_file))[1] -- loads up the assets through getobjects in a clonerefed state, getcustomasset imiates a rbxassetid:// with a local file
+local assets = game:GetObjects(getcustomasset(export_file))[1] -- loads up the assets through getobjects, getcustomasset imiates a rbxassetid:// with a local file
 local inputServ = cloneref(game:GetService("UserInputService"))
 
 local clearChildren = function(...) -- ease of access function to clear out non ui elements since the assets for the gui are built up in a gui
@@ -66,24 +66,25 @@ function lib:CreateGui(name)
         local tFr = assets.Frame.content.padding.stuf:Clone() -- this is the frame storing the content for the pages
         local tBtn = assets.Frame.content.tabs.TextButton:Clone() -- creates the tab button to easily access sections
 
-        tBtn.Text = name
-        tBtn.Parent = sFrame.content.tabs -- adds the tab button to the sidebar
-
-        table.insert(cons, tBtn.MouseButton1Click:Connect(function()
-            for _, v in tabs do -- loops through all tabs in the gui
-                v.Visible = false -- hides them
-                v.Parent = nil -- parents them to nil to save perf
-            end
-            tFr.Parent = sFrame.content.padding -- reparents the tab since it was hidden before
-            tFr.Visible = true -- unhides it
-        end))
-
-        clearChildren(tFr) -- clears all the premade assets in the cloned gui asset
-
-        local tFuncs = {
+		local tFuncs = {
             inst = tBtn, -- returns the tab button instance incase the dev wants to modify a part of it
             fInst = tFr -- returns the tab frame
         }
+
+        tBtn.Text = name
+        tBtn.Parent = sFrame.content.tabs -- adds the tab button to the sidebar
+		
+		function tFuncs:ChangeTab()
+			for _, v in tabs do -- loops through all tabs in the gui
+				v.Visible = false -- hides them
+				v.Parent = nil -- parents them to nil to save perf
+			end
+			tFr.Parent = sFrame.content.padding -- reparents the tab since it was hidden before
+			tFr.Visible = true -- unhides it
+		end
+
+        table.insert(cons, tBtn.MouseButton1Click:Connect(tFuncs.ChangeTab))
+        clearChildren(tFr) -- clears all the premade assets in the cloned gui asset
 
         function tFuncs:CreateButton(name, callback, ...)
             local args = {...} -- takes extra arguments that might need to be passed through the button, incase you create a button with a callback of .FireServer, you need to pass the self instance for : functions to function
