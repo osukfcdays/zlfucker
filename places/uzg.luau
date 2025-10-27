@@ -2,6 +2,7 @@ local emptyFunc = function() end
 local cons = gui.cons
 local tabs = {
     Teams = true,
+    Items = true,
     Client = true,
     Server = true
 }
@@ -14,12 +15,10 @@ do
     btn.TextYAlignment = Enum.TextYAlignment.Top
     btn.TextSize = 24
     btn.Text = [[
-    + OP Sprint
-    + Infinite Stamina
-    + Kill aura
-    + Remove Team barriers
-    + Become Human
-    + Become Zombie
+    + Spawn cookies (amount per second depends on server and ping)
+    + Grab Charged_bat (must be in server)
+    + Grab Fire katana 
+    + Equip Shop weapons (must own weapon and be the correct team)
     ]]
 end
 
@@ -47,6 +46,16 @@ function GetChar(lplr) -- ong we need a function for ts.
 end
 
 
+function GetHumRootPart(char)
+    local HumRootPart = char:FindFirstChild("HumanoidRootPart")
+    return HumRootPart
+end
+
+local Equipables = { -- ah yes make another shit table for 5 fucking items will you
+    "katana", "machete", "wooden_bat", "crowbar","hatchet"
+}
+
+
 local find = {
     Melee = "katana" or "machete" or "wooden_bat" or"charged_bat" or "flame_katana" or "crowbar" or "hatchet" or "Attack"
 }
@@ -66,6 +75,62 @@ for i,v in find do
     return ((FindingItem) or nil)
     end
 end
+
+
+
+tabs.Items:CreateButton("Grab Flame katana", function()
+    workspace.Scripted.Flame_Katana_Giver.Prompt.HoldDuration = 0.001
+
+    local oldCframe = Instance.new("Part") 
+    oldCframe.CFrame = GetHumRootPart(char).CFrame
+    oldCframe.Anchored = true
+
+    GetHumRootPart(lplr.Character).CFrame = CFrame.new(workspace.Scripted.Flame_Katana_Giver.Position)
+
+    wait(0.2)
+
+    fireproximityprompt(workspace.Scripted.Flame_Katana_Giver.Prompt)
+
+    wait(0.4)
+
+    GetHumRootPart(char).CFrame = oldCframe.CFrame
+
+    oldCframe:Destroy()
+end)
+
+tabs.Items:CreateButton("Grab Charged bat", function() -- sigma lvl 100 cuckkid 1x1x1x1 sigma patrick bateman alpha wolf skidding cframe saving method
+    if workspace:FindFirstChild("charged_bat") then
+        workspace:FindFirstChild("charged_bat"):WaitForChild("RightArm"):WaitForChild("Hitbox"):WaitForChild("ProximityPrompt").HoldDuration = 0.001
+
+        local oldCframe = Instance.new("Part") 
+        oldCframe.CFrame = GetHumRootPart(char).CFrame
+        oldCframe.Anchored = true
+
+        GetHumRootPart(lplr.Character).CFrame = CFrame.new(workspace:FindFirstChild("charged_bat"):WaitForChild("RightArm"):WaitForChild("Handle").Position)
+
+        wait(0.2)
+
+        fireproximityprompt(workspace:FindFirstChild("charged_bat"):WaitForChild("RightArm"):WaitForChild("Hitbox"):WaitForChild("ProximityPrompt")) -- bunni.lol fireproximityprompt so good it doesnt even work man
+
+        wait(0.4)
+
+        GetHumRootPart(char).CFrame = oldCframe.CFrame
+
+        oldCframe:Destroy()
+    else
+        gui:Notify("Charged bat isn't in server right now")
+    end
+end)
+
+do
+    local ShopRemote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Shop")
+    for _,v in Equipables do
+        tabs.Items:CreateButton("Equip ".. v, function()
+            ShopRemote:InvokeServer("equip" ,v)
+        end)
+    end
+end
+
 
 
 tabs.Teams:CreateButton("Become Human", function()
@@ -146,6 +211,25 @@ do
                     end
                 end
                 task.wait()
+            until not tgl.Enabled
+        end
+    end)
+end
+
+do -- like zombielab the amount you can do per-second is dependant on your ping ffs, also issue where picking up a cookie bricks it until you drop said cookie. :(
+    local tgl
+    local clickdetector = workspace.Scripted.CookiesPlate.Part.ClickDetector
+    tgl = tabs.Server:CreateToggle("Spawn cookies", function(c)
+        if c then
+            repeat
+                for _, v in lplr.Backpack:GetChildren() do
+                    if v.ClassName == "Tool" and v.Name == "cookie" then
+                        v.Parent = char
+                        v.Parent = workspace
+                    end
+                end
+                task.wait(0)
+                fireclickdetector(clickdetector)
             until not tgl.Enabled
         end
     end)
