@@ -68,7 +68,6 @@ local Barriers = {
     "Collission and proteciton"
 }
 
-
 for i,v in find do
     find[i] = function(FindItem)
         local FindingItem = (FindItem and (plrs:FindFirstChild(v, true) or char:FindFirstChild(v, true)))
@@ -77,49 +76,31 @@ for i,v in find do
 end
 
 
+tabs.Items:CreateButton("Charged_bat", function()
+    local oldCFrame = GetHumRootPart(lplr.Character).CFrame
 
-tabs.Items:CreateButton("Grab Flame katana", function()
-    workspace.Scripted.Flame_Katana_Giver.Prompt.HoldDuration = 0.001
-
-    local oldCframe = Instance.new("Part") 
-    oldCframe.CFrame = GetHumRootPart(char).CFrame
-    oldCframe.Anchored = true
-
-    GetHumRootPart(lplr.Character).CFrame = CFrame.new(workspace.Scripted.Flame_Katana_Giver.Position)
-
-    wait(0.2)
-
-    fireproximityprompt(workspace.Scripted.Flame_Katana_Giver.Prompt)
-
-    wait(0.4)
-
-    GetHumRootPart(char).CFrame = oldCframe.CFrame
-
-    oldCframe:Destroy()
+    if workspace:FindFirstChild("charged_bat") then
+        workspace.charged_bat.RightArm.Hitbox.ProximityPrompt.HoldDuration = 0.001
+        GetHumRootPart(lplr.Character).CFrame = CFrame.new(workspace.charged_bat.RightArm.Handle.Position)
+        wait(0.23)
+        fireproximityprompt(workspace.charged_bat.RightArm.Hitbox.ProximityPrompt)
+        wait(0.13)
+        GetHumRootPart(lplr.Character).CFrame = oldCFrame
+    else
+        gui:Notify("Charged bat not in server")
+    end
 end)
 
-tabs.Items:CreateButton("Grab Charged bat", function() -- sigma lvl 100 cuckkid 1x1x1x1 sigma patrick bateman alpha wolf skidding cframe saving method
-    if workspace:FindFirstChild("charged_bat") then
-        workspace:FindFirstChild("charged_bat"):WaitForChild("RightArm"):WaitForChild("Hitbox"):WaitForChild("ProximityPrompt").HoldDuration = 0.001
 
-        local oldCframe = Instance.new("Part") 
-        oldCframe.CFrame = GetHumRootPart(char).CFrame
-        oldCframe.Anchored = true
+tabs.Items:CreateButton("Flame katana", function()
+    local oldCFrame = GetHumRootPart(lplr.Character).CFrame
 
-        GetHumRootPart(lplr.Character).CFrame = CFrame.new(workspace:FindFirstChild("charged_bat"):WaitForChild("RightArm"):WaitForChild("Handle").Position)
-
-        wait(0.2)
-
-        fireproximityprompt(workspace:FindFirstChild("charged_bat"):WaitForChild("RightArm"):WaitForChild("Hitbox"):WaitForChild("ProximityPrompt")) -- bunni.lol fireproximityprompt so good it doesnt even work man
-
-        wait(0.4)
-
-        GetHumRootPart(char).CFrame = oldCframe.CFrame
-
-        oldCframe:Destroy()
-    else
-        gui:Notify("Charged bat isn't in server right now")
-    end
+    workspace.Scripted.Flame_Katana_Giver.Prompt.HoldDuration = 0.001
+    GetHumRootPart(lplr.Character).CFrame = CFrame.new(workspace.Scripted.Flame_Katana_Giver.Position)
+    wait(0.23)
+    fireproximityprompt(workspace.Scripted.Flame_Katana_Giver.Prompt)
+    wait(0.13)
+    GetHumRootPart(lplr.Character).CFrame = oldCFrame
 end)
 
 do
@@ -142,6 +123,8 @@ tabs.Teams:CreateButton("Become Zombie", function()
     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("UpdateServerData"):InvokeServer("spawn_select", "zombie_main")
     lplr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Dead)
 end)
+
+
 
 do
     local tgl
@@ -173,7 +156,6 @@ do
     end)
 end
 
-
 tabs.Client:CreateButton("Remove Team Barriers", function()
     for _,v in Barriers do
         if workspace:FindFirstChild(v, true) then
@@ -184,6 +166,8 @@ tabs.Client:CreateButton("Remove Team Barriers", function()
         end
     end
 end)
+
+
 
 do
     local tgl
@@ -216,21 +200,38 @@ do
     end)
 end
 
-do -- like zombielab the amount you can do per-second is dependant on your ping ffs, also issue where picking up a cookie bricks it until you drop said cookie. :(
+do 
     local tgl
-    local clickdetector = workspace.Scripted.CookiesPlate.Part.ClickDetector
-    tgl = tabs.Server:CreateToggle("Spawn cookies", function(c)
-        if c then
+    local clickdetector = workspace.Scripted.CookiesPlate.Part.ClickDetector -- idk why i made a variable for this tbh
+    local cookieTbl = {} 
+    
+
+    function getcookies()
+        for _, v in lplr.Backpack:GetChildren() do
+            if v.ClassName == "Tool" and v.Name == "cookie" then
+                table.insert(cookieTbl, v)
+            end
+        end
+        for _, v in lplr.Character:GetChildren() do
+            if v.ClassName == "Tool" and v.Name == "cookie" then
+                table.insert(cookieTbl, v)
+            end
+        end
+    end
+
+    tgl = tabs.Server:CreateToggle("Spawn cookies", function()
+        if tgl.Enabled then
             repeat
-                for _, v in lplr.Backpack:GetChildren() do
-                    if v.ClassName == "Tool" and v.Name == "cookie" then
-                        v.Parent = char
-                        v.Parent = workspace
-                    end
+                getcookies()
+                for i,v in cookieTbl do
+                    v.Parent = char
+                    v.Parent = workspace
+                    table.remove(cookieTbl, i)
                 end
-                task.wait(0)
+                task.wait(0.01)
                 fireclickdetector(clickdetector)
             until not tgl.Enabled
+            table.clear(cookieTbl)
         end
     end)
 end
