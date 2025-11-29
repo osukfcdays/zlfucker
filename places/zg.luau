@@ -11,7 +11,6 @@ tabs = gui:Init({
     tabs = tabs,
     changelog = [[
     + Rewrote kill Zombies
-    + NOOBIE
     ]]
 }).tabs
 
@@ -28,7 +27,7 @@ local lplr = plrs.LocalPlayer
 local char = lplr.Character
 
 
---[[function GetHumRootPart(char) -- useless right now unless we adds teleports or smth.
+--[[function GetHumRootPart(char) -- not needed rn
 	local HumRootPart = char:FindFirstChild("HumanoidRootPart")
 	return HumRootPart
 end]]
@@ -60,19 +59,11 @@ end
 
 
 tabs.Teams:CreateButton("Become Human", function()
-    if lplr.Team == Teams.Human then
-        gui:Notify("You're already Human")
-    else
-        lplr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Dead)
-    end
+    lplr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Dead)
 end)
 
 tabs.Teams:CreateButton("Become Zombie", function()
-    if lplr.Team == Teams.Zombie then
-        gui:Notify("You're already a Zombie")
-    else
-        plrs:Chat(";zombie") 
-    end
+    plrs:Chat(";zombie") 
 end)
 
 
@@ -113,22 +104,14 @@ tabs.Items:CreateButton("Minigun Sniper", function()
 end)
 
 tabs.Items:CreateButton("Give Antidote", function()
-    if not lplr:FindFirstChild("Antidote", true) and not char:FindFirstChild("Antidote", true) then 
-        fireclickdetector(workspace.Interaction.ToolGivers.Antidote.ClickDetector, 0)
-    else
-        gui:Notify("You already have a Antidote")
-    end
+    fireclickdetector(workspace.Interaction.ToolGivers.Antidote.ClickDetector, 0)
 end)
 
 tabs.Items:CreateButton("Give Rainbow Potion", function()
-    if not lplr:FindFirstChild("Rainbow Potion", true) and not char:FindFirstChild("Rainbow Potion", true) then
-        fireclickdetector(workspace.Interaction.ToolGivers["Rainbow Potion"].ClickDetector, 0)
-    else
-        gui:Notify("You already have a Rainbow Potion")
-    end
+    fireclickdetector(workspace.Interaction.ToolGivers["Rainbow Potion"].ClickDetector, 0)
 end)
 
-tabs.Items:CreateButton("Give all Signs", function() -- long 'and not' statements🤤🤤🤤
+tabs.Items:CreateButton("Give all Signs", function() -- i will not touch this nor try to format it better
     if lplr.Team == Teams.Human then
         if not lplr:FindFirstChild("AntiZombieSign", true) and not char:FindFirstChild("AntiZombieSign", true) and not lplr:FindFirstChild("AntiZombieSign2", true) and not char:FindFirstChild("AntiZombieSign2", true) and not lplr:FindFirstChild("AntiZombieSign3", true) and not char:FindFirstChild("AntiZombieSign3", true) then
             fireclickdetector(workspace.Interaction.ToolGivers.AntiZombieSign.ClickDetector, 0)
@@ -174,6 +157,7 @@ tabs.Client:CreateButton("Remove Team Barriers", function()
 end)
 
 local living = workspace.LivingThings
+
 tabs.Client:CreateToggle("Unload Entites", function(c)
     lplr.Character.Parent = (c and workspace) or living
     if c then
@@ -363,6 +347,7 @@ do
 
     local tgl
     local event = game:GetService("ReplicatedStorage"):WaitForChild("NetworkEvents"):WaitForChild("RemoteEvent")
+
     tgl = tabs.Server:CreateToggle("Kill Zombies", function()
         if tgl.Enabled then
             repeat
@@ -371,7 +356,7 @@ do
                         getzombies()
 
                         for i,v in zombieTbl do
-                            if v and v.Humanoid then
+                            if v and v:FindFirstChild("Humanoid") then
                                 event:FireServer("GUN_DAMAGE", v)
                                 table.remove(zombieTbl, i)
                             end
