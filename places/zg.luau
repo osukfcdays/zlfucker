@@ -1,37 +1,19 @@
--- srry if it errors, I don't test my code. Cheers, Reret2729.
-
 local emptyFunc = function() end
 local cons = gui.cons
 local tabs = {
-    Teams = true,
-    Items = true,
-    Weapons = true,
-    Client = true,
-    Server = true,
+    Teams = 1,
+    Items = 2,
+    Weapons = 3,
+    Client = 4,
+    Server = 5,
 }
-
-do 
-    local tab = gui:CreateTab("Changelog")
-    local btn : TextButton = tab:CreateButton("test").inst
-    btn.Size = UDim2.new(1, 0, 1, 0)
-    btn.TextScaled = false
-    btn.TextYAlignment = Enum.TextYAlignment.Top
-    btn.TextSize = 24
-    btn.Text = [[
-    + Loop kill Zombies
-    + Minigun Sniper
-    + Lag server (Acid Edition)
-    + Acid rain
-    + Spawn acid
-    + Annoy all
-    + Give Weapons
-    + Fixed Remove Team Barriers
+tabs = gui:Init({
+    tabs = tabs,
+    changelog = [[
+    + Rewrote kill Zombies
+    + NOOBIE
     ]]
-end
-
-for i, v in tabs do
-    tabs[i] = gui:CreateTab(i)
-end
+}).tabs
 
 local plrs : Players = cloneref(game:GetService("Players"))
 local starGui : StarterGui = cloneref(game:GetService("StarterGui"))
@@ -190,64 +172,6 @@ tabs.Client:CreateButton("Remove Team Barriers", function()
         end
     end
 end)
-
-
---[[do -- broke because game is SHIT. We fix later, not really needed with the current features.
-    local function AddHighlight(plr)
-        local highlight = Instance.new("Highlight")
-        highlight.Adornee = plr.Character
-        highlight.Parent = plr.Character 
-        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        highlight.FillColor = plr.TeamColor.Color
-        highlight.OutlineColor = Color3.fromRGB(235,235,235)
-        highlight.FillTransparency = .3
-
-        return highlight
-    end
-
-    local function RemoveHighlights(plr)
-        local res = plr.Character and plr.Character:FindFirstChildWhichIsA("Highlight")
-        if res then
-            res:Destroy()
-        end
-    end
-
-    local function ActuallyAddingHighlights(plr) 
-        local ratlight
-        plr.CharacterAdded:connect(function()
-            ratlight = AddHighlight(plr)
-        end)
-
-        plr.CharacterRemoving:connect(function()
-            RemoveHighlights(plr)
-        end)
-
-        plr:GetPropertyChangedSignal("TeamColor"):Connect(function()
-            if ratlight and ratlight.Parent then
-                ratlight.FillColor = plr.TeamColor.Color or ratlight.FillColor
-            end
-        end)
-
-        if plr.Character then
-            ratlight = AddHighlight(plr)
-        end
-    end
-
-    tabs.Client:CreateToggle("ESP", function(c)
-        if c then
-            for _,v in plrs:GetPlayers() do 
-                if lplr ~= v then
-                    coroutine.wrap(ActuallyAddingHighlights)(v)
-                end
-            end
-            plrs.PlayerAdded:connect(ActuallyAddingHighlights)
-        else
-            for _, v in plrs:GetPlayers() do
-                coroutine.wrap(RemoveHighlights)(v)
-            end
-        end
-    end)
-end]]
 
 local living = workspace.LivingThings
 tabs.Client:CreateToggle("Unload Entites", function(c)
@@ -424,39 +348,42 @@ do
 end
 
 
-do -- going from zombie to human with this enabled for some reason just bricks it entirely, I'll fix it sooner or later.
+do 
+    local zombieTbl = {}
+
+    function getzombies()
+        for _,v in living:GetChildren() do
+            if v and v:FindFirstChild("Humanoid") then 
+                if v:GetAttribute("Team") ~= lplr.Team and v.Humanoid.Health > 0 then
+                    table.insert(zombieTbl, v)
+                end
+            end
+        end
+    end
+
     local tgl
     local event = game:GetService("ReplicatedStorage"):WaitForChild("NetworkEvents"):WaitForChild("RemoteEvent")
-    local eventC = 0
-    tgl = tabs.Server:CreateToggle("Loop kill Zombies", function(c)
-        if c then
-            if lplr.Team == Teams.Zombie then
-                lplr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Dead)
-            end
+    tgl = tabs.Server:CreateToggle("Kill Zombies", function()
+        if tgl.Enabled then
+            repeat
+                if lplr.Team == Teams.Human then
+                    if find.Sniper(true) then
+                        getzombies()
 
-            if not find.Sniper(true) then 
-                game:GetService("ReplicatedStorage").Remotes.Shop.EquipWeapon:InvokeServer("Sniper")
-            end
-
-            repeat -- rapes ping after like 10 mins of use, prob should fix.
-                if find.Sniper(true) then
-                    for _, v in living:GetChildren() do
-                        if v:GetAttribute("Team") and v:GetAttribute("Team") ~= lplr.Character:GetAttribute("Team") then
-                            local hum = v:FindFirstChildWhichIsA("Humanoid")
-                            if hum and hum.Health > 0 and hum.RootPart then
-                                if eventC < 100 then
-                                    coroutine.wrap(function()
-                                        eventC += 1
-                                        event:FireServer("GUN_DAMAGE", hum.Parent)
-                                        eventC -= 1
-                                    end)()
-                                end
+                        for i,v in zombieTbl do
+                            if v and v.Humanoid then
+                                event:FireServer("GUN_DAMAGE", v)
+                                table.remove(zombieTbl, i)
                             end
                         end
                     end
+                else
+                    lplr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Dead)
+                    lplr.CharacterAdded:wait()
                 end
-                task.wait()
+            task.wait(0.1)
             until not tgl.Enabled
+            table.clear(zombieTbl)
         end
     end)
 end
