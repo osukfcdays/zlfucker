@@ -62,6 +62,35 @@ function lib:CreateGui(name)
         end
     end))
 
+    function gFuncs:Init(data) -- simple init function to prevent repetition
+        if data.tabs then
+            local new = {} -- used to convert into array for proper order
+            if data.changelog then
+                new[1] = "Changelog"
+            end
+
+            local offset = #new -- used to offset if user set a changelog
+            for i, v in data.tabs do -- loops through tabs
+                new[v + offset] = i -- sets the i value
+            end
+            
+            table.clear(data.tabs) -- clears the tabs
+            for _, v in new do -- looping our proper order table
+                data.tabs[v] = gui:CreateTab(v) -- sets the same values of index, but whilist creating tabs in order
+            end
+        end
+        if data.changelog then -- changelog init for gui
+            local btn : TextButton = data.tabs.Changelog:CreateButton("test").inst
+            btn.Size = UDim2.new(1, 0, 1, 0)
+            btn.TextScaled = false
+            btn.TextYAlignment = Enum.TextYAlignment.Top
+            btn.TextSize = 24
+            btn.Text = data.changelog
+        end
+
+        return data
+    end
+
     function gFuncs:CreateTab(name)
         local tFr = assets.Frame.content.padding.stuf:Clone() -- this is the frame storing the content for the pages
         local tBtn = assets.Frame.content.tabs.TextButton:Clone() -- creates the tab button to easily access sections
