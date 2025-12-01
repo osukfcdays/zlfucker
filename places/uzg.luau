@@ -170,9 +170,9 @@ do
             ratlight = AddHighlight(plr)
         end
 
-        plr:GetPropertyChangedSignal("TeamColor"):Connect(function()
+        plr:GetPropertyChangedSignal("TeamColor"):connect(function()
             if ratlight and ratlight.Parent then
-                ratlight.FillColor = plr.TeamColor.Color or ratlight.FillColor
+                ratlight.FillColor = plr.TeamColor.Color
             end
         end)
     end
@@ -182,7 +182,7 @@ do
         if tgl.Enabled then
             repeat
                 for _,v in plrs:GetPlayers() do 
-                    if v and v.Character and lplr ~= v and not v.Character:FindFirstChildWhichIsA("Highlight") then
+                    if lplr ~= v then
                     ActuallyAddingHighlights(v)
                     end
                 end
