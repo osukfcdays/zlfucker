@@ -11,6 +11,7 @@ tabs = gui:Init({
     tabs = tabs,
     changelog = [[
     + Rewrote kill Zombies
+    + ESP
     ]]
 }).tabs
 
@@ -35,8 +36,8 @@ end]]
 
 
 local find = {
-    Weapon = "Hitbox" or "Damage",
-    Sniper = "M24" or "Mag" or "Bolt"
+    Weapons = "Hitbox" or "Handle" or "Damage",
+    Sniper = "M24" or "Bolt"
 }
 
 
@@ -51,7 +52,7 @@ local Teambarriers = {
 
 for i,v in find do
     find[i] = function(FindItem)
-        local FindingItem = (FindItem and (plrs:FindFirstChild(v, true) or char:FindFirstChild(v, true)))
+        local FindingItem = (FindItem and (lplr:FindFirstChild(v, true) or char:FindFirstChild(v, true)))
     return ((FindingItem and FindingItem.Parent.Parent) or nil)
     end
 end
@@ -63,13 +64,13 @@ tabs.Teams:CreateButton("Become Human", function()
 end)
 
 tabs.Teams:CreateButton("Become Zombie", function()
-    plrs:Chat(";zombie") 
+    game.TextChatService.TextChannels.RBXGeneral:SendAsync(";zombie")
 end)
 
 
 tabs.Items:CreateButton("Minigun Sniper", function()
     game:GetService("ReplicatedStorage").Remotes.Shop.EquipWeapon:InvokeServer("Sniper")
-
+    
     local Sniper = lplr:FindFirstChild("Sniper", true) or char:FindFirstChild("Sniper", true)
     local scr = getsenv(Sniper.LocalScript)
     local shoot = debug.getupvalue(scr.FireGun, 5)
@@ -84,7 +85,7 @@ tabs.Items:CreateButton("Minigun Sniper", function()
         end)
         shoot(Sniper.Flash2.Position, calc(...))
     end
-
+    
     local mouse = lplr:GetMouse()
     local buttonDown = false
     mouse.Button1Down:Connect(function()
@@ -97,7 +98,7 @@ tabs.Items:CreateButton("Minigun Sniper", function()
             until not buttonDown
         end
     end)
-
+    
     mouse.Button1Up:Connect(function()
         buttonDown = false
     end)
@@ -146,6 +147,77 @@ do
             end)
         end
     end
+end
+
+
+
+do
+    local function AddHighlight(plr)
+        local res = plr.Character and plr.Character:FindFirstChildWhichIsA("Highlight")
+
+        if not res then
+            local highlight = Instance.new("Highlight")
+            highlight.Adornee = plr.Character
+            highlight.Parent = plr.Character 
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.FillColor = plr.TeamColor.Color
+            highlight.OutlineColor = Color3.fromRGB(235,235,235)
+            highlight.FillTransparency = .3
+
+            return highlight
+        end
+    end
+
+    local function RemoveHighlights(plr)
+        local highlight = plr.Character and plr.Character:FindFirstChildWhichIsA("Highlight")
+
+        if highlight then
+            highlight:Destroy()
+        end
+    end
+
+    local function ActuallyAddingHighlights(plr) 
+        local ratlight
+
+        if plr.CharacterAdded then
+            ratlight = AddHighlight(plr)
+        end
+
+        if plr.CharacterRemoving then
+            RemoveHighlights(plr)
+        end
+
+        if plrs.PlayerAdded then
+            ratlight = AddHighlight(plr)
+        end
+
+        if plr.Character then
+            ratlight = AddHighlight(plr)
+        end
+
+        plr:GetPropertyChangedSignal("TeamColor"):Connect(function()
+            if ratlight and ratlight.Parent then
+                ratlight.FillColor = plr.TeamColor.Color or ratlight.FillColor
+            end
+        end)
+    end
+
+    local tgl
+    tgl = tabs.Client:CreateToggle("ESP", function()
+        if tgl.Enabled then
+            repeat
+                for _,v in plrs:GetPlayers() do 
+                    if v and v.Character and lplr ~= v and not v.Character:FindFirstChildWhichIsA("Highlight") then
+                    ActuallyAddingHighlights(v)
+                    end
+                end
+            task.wait(0.1)
+            until not tgl.Enabled
+            for _,v in plrs:GetPlayers() do
+                RemoveHighlights(v)
+            end
+        end
+    end)
 end
 
 tabs.Client:CreateButton("Remove Team Barriers", function()
@@ -312,12 +384,13 @@ do
                 if find.Weapon(true) then
                     for _, v in living:GetChildren() do
                         if v:GetAttribute("Team") and v:GetAttribute("Team") ~= lplr.Character:GetAttribute("Team") then
+                            local root = v:FindFirstChild("HumanoidRootPart")
                             local hum = v:FindFirstChildWhichIsA("Humanoid")
-                            if hum and hum.Health > 0 and hum.RootPart and (hum.RootPart.Position - lplr.Character.Humanoid.RootPart.Position).Magnitude <= 10 then
+                            if hum and hum.Health > 0 and root and (root.Position - lplr.Character.HumanoidRootPart.Position).Magnitude <= 10 then
                                 if eventC < 100 then
                                     coroutine.wrap(function()
                                         eventC += 1
-                                        event:InvokeServer(hum.RootPart)
+                                        event:InvokeServer(root)
                                         eventC -= 1
                                     end)()
                                 end
@@ -361,10 +434,10 @@ do
                                 table.remove(zombieTbl, i)
                             end
                         end
+                    else
+                        game:GetService("ReplicatedStorage").Remotes.Shop.EquipWeapon:InvokeServer("Sniper") 
+                        find.Sniper(true)
                     end
-                else
-                    lplr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Dead)
-                    lplr.CharacterAdded:wait()
                 end
             task.wait(0.1)
             until not tgl.Enabled
