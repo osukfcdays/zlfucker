@@ -15,6 +15,7 @@ do
     btn.TextYAlignment = Enum.TextYAlignment.Top
     btn.TextSize = 24
     btn.Text = [[
+    + ESP
     + Spawn cookies (amount per second depends on server and ping)
     + Grab Charged_bat (must be in server)
     + Grab Fire katana 
@@ -70,7 +71,7 @@ local Barriers = {
 
 for i,v in find do
     find[i] = function(FindItem)
-        local FindingItem = (FindItem and (plrs:FindFirstChild(v, true) or char:FindFirstChild(v, true)))
+        local FindingItem = (FindItem and (lplr:FindFirstChild(v, true) or char:FindFirstChild(v, true)))
     return ((FindingItem) or nil)
     end
 end
@@ -125,6 +126,74 @@ tabs.Teams:CreateButton("Become Zombie", function()
 end)
 
 
+do
+    local function AddHighlight(plr)
+        local res = plr.Character and plr.Character:FindFirstChildWhichIsA("Highlight")
+
+        if not res then
+            local highlight = Instance.new("Highlight")
+            highlight.Adornee = plr.Character
+            highlight.Parent = plr.Character 
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.FillColor = plr.TeamColor.Color
+            highlight.OutlineColor = Color3.fromRGB(235,235,235)
+            highlight.FillTransparency = .3
+
+            return highlight
+        end
+    end
+
+    local function RemoveHighlights(plr)
+        local highlight = plr.Character and plr.Character:FindFirstChildWhichIsA("Highlight")
+
+        if highlight then
+            highlight:Destroy()
+        end
+    end
+
+    local function ActuallyAddingHighlights(plr) 
+        local ratlight
+
+        if plr.CharacterAdded then
+            ratlight = AddHighlight(plr)
+        end
+
+        if plr.CharacterRemoving then
+            RemoveHighlights(plr)
+        end
+
+        if plrs.PlayerAdded then
+            ratlight = AddHighlight(plr)
+        end
+
+        if plr.Character then
+            ratlight = AddHighlight(plr)
+        end
+
+        plr:GetPropertyChangedSignal("TeamColor"):Connect(function()
+            if ratlight and ratlight.Parent then
+                ratlight.FillColor = plr.TeamColor.Color or ratlight.FillColor
+            end
+        end)
+    end
+
+    local tgl
+    tgl = tabs.Client:CreateToggle("ESP", function()
+        if tgl.Enabled then
+            repeat
+                for _,v in plrs:GetPlayers() do 
+                    if v and v.Character and lplr ~= v and not v.Character:FindFirstChildWhichIsA("Highlight") then
+                    ActuallyAddingHighlights(v)
+                    end
+                end
+            task.wait(0.1)
+            until not tgl.Enabled
+            for _,v in plrs:GetPlayers() do
+                RemoveHighlights(v)
+            end
+        end
+    end)
+end
 
 do
     local tgl
