@@ -347,7 +347,7 @@ do
 
         if c then
             repeat
-                if find.Weapon(true) then
+                if find.Weapons(true) then
                     for _, v in living:GetChildren() do
                         if lplr.Character ~= v then
                             local hum = v:FindFirstChildWhichIsA("Humanoid")
@@ -382,7 +382,7 @@ do
                 else
                     event = rStor.Remotes.Melee.Damage
                 end
-                if find.Weapon(true) then
+                if find.Weapons(true) then
                     for _, v in living:GetChildren() do
                         if v:GetAttribute("Team") and v:GetAttribute("Team") ~= lplr.Character:GetAttribute("Team") then
                             local root = v:FindFirstChild("HumanoidRootPart")
