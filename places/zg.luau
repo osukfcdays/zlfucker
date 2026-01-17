@@ -10,6 +10,7 @@ local tabs = {
 tabs = gui:Init({
     tabs = tabs,
     changelog = [[
+	+ Fixed kill aura/annoy all
     + Rewrote kill Zombies
     + ESP
     ]]
