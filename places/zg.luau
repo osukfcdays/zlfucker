@@ -10,9 +10,10 @@ local tabs = {
 tabs = gui:Init({
     tabs = tabs,
     changelog = [[
+    + Remove Melee/Spitter cooldown - by OverZuka
+    + Become Spitter
+    + Annoy all (Acid edition)
 	+ Fixed kill aura/annoy all
-    + Rewrote kill Zombies
-    + ESP
     ]]
 }).tabs
 
@@ -29,10 +30,10 @@ local lplr = plrs.LocalPlayer
 local char = lplr.Character
 
 
---[[function GetHumRootPart(char) -- not needed rn
+function GetHumRootPart(char)
 	local HumRootPart = char:FindFirstChild("HumanoidRootPart")
 	return HumRootPart
-end]]
+end
 
 
 
@@ -66,6 +67,24 @@ end)
 
 tabs.Teams:CreateButton("Become Zombie", function()
     game.TextChatService.TextChannels.RBXGeneral:SendAsync(";zombie")
+end)
+
+tabs.Teams:CreateButton("Become Spitter", function()
+    local oldCFrame = GetHumRootPart(lplr.Character).CFrame
+
+    if lplr.Character:FindFirstChild("ForceField") then
+        GetHumRootPart(lplr.Character).CFrame = CFrame.new(workspace.OutsideOfGame.Shopkeeper.Head.Position)
+        wait(1)
+        for i = 1,15 do
+        game:GetService("ReplicatedStorage").Remotes.ZombieRelated.TouchedAcid:FireServer("")
+        end
+        wait(0.1)
+        GetHumRootPart(lplr.Character).CFrame = oldCFrame
+    else
+        for i = 1,15 do
+            game:GetService("ReplicatedStorage").Remotes.ZombieRelated.TouchedAcid:FireServer("")
+        end
+    end
 end)
 
 
@@ -137,7 +156,53 @@ tabs.Items:CreateButton("Give all Signs", function() -- i will not touch this no
     end
 end)
 
+tabs.Items:CreateButton("Remove Melee & Spitter cooldown", function()
+        local MeleeFunctions = require(rStor.Modules.MeleeFunctions)
+    local ShovelModule = require(rStor.Modules.Items.Shovel)
+    local originalShovelNew = ShovelModule.new
+    local SpitModule = require(rStor.Modules.Items.Spit)
+    local originalFireGun = SpitModule.FireGun
+    
+    MeleeFunctions.AddCooldown = function() end
+    MeleeFunctions.CheckForCooldown = function() return false end
 
+    ShovelModule.new = function(...)
+        local shovelObject = originalShovelNew(...)
+        
+        if shovelObject and shovelObject.AnimationTracks and shovelObject.AnimationTracks.Attack then
+            shovelObject.AnimationTracks.Attack.Speed = 1.30
+        end
+        
+        return shovelObject
+    end
+
+    SpitModule.FireGun = function(spitObject, mouseX, mouseY)
+        local headPosition = spitObject.Character.Head.Position
+        
+        local localPlayer = game:GetService("Players").LocalPlayer
+        local cameraRay = workspace.CurrentCamera:ScreenPointToRay(mouseX, mouseY)
+        local raycastParams = RaycastParams.new()
+        raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+        raycastParams.FilterDescendantsInstances = { localPlayer.Character }
+        local raycastResult = workspace:Raycast(cameraRay.Origin, cameraRay.Direction * 1000, raycastParams)
+        local aimPosition = raycastResult and raycastResult.Position or (cameraRay.Origin + cameraRay.Direction * 1000)
+
+        local directionVector = aimPosition - headPosition
+        
+        rStor.Remotes.ZombieRelated.AcidSpit:FireServer(headPosition, aimPosition)
+
+        local projectileMagnitude = directionVector.Magnitude
+        if projectileMagnitude > 41 then
+            directionVector = directionVector.Unit * 40
+            projectileMagnitude = 40
+        end
+
+        local timeToTarget = math.log(1.001 + projectileMagnitude * 0.01)
+        local projectileVelocity = directionVector / timeToTarget + Vector3.new(0, workspace.Gravity * 0.5 * timeToTarget, 0)
+        
+        require(rStor.VisualFunctions.AcidProjectile)(headPosition, projectileVelocity)
+    end
+end)
 
 do
     local ShopRemote = game:GetService("ReplicatedStorage").Remotes.Shop.EquipWeapon
@@ -269,6 +334,41 @@ local rejoin = function()
     TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId)
 end
 
+do
+    local tgl
+    local event = rStor.Remotes.Melee.Damage
+    local eventC = 0
+    tgl = tabs.Server:CreateToggle("Kill aura", function(c)
+        if c then
+            repeat
+                if lplr.Team == Teams.Zombie then
+                    event = rStor.Remotes.ZombieRelated.PlayerAttack
+                else
+                    event = rStor.Remotes.Melee.Damage
+                end
+                if find.Weapons(true) then
+                    for _, v in living:GetChildren() do
+                        if v:GetAttribute("Team") and v:GetAttribute("Team") ~= lplr.Character:GetAttribute("Team") then
+                            local root = v:FindFirstChild("HumanoidRootPart")
+                            local hum = v:FindFirstChildWhichIsA("Humanoid")
+                            if hum and hum.Health > 0 and root and (root.Position - lplr.Character.HumanoidRootPart.Position).Magnitude <= 10 then
+                                if eventC < 100 then
+                                    coroutine.wrap(function()
+                                        eventC += 1
+                                        event:InvokeServer(root)
+                                        eventC -= 1
+                                    end)()
+                                end
+                            end
+                        end
+                    end
+                end
+                task.wait()
+            until not tgl.Enabled
+        end
+    end)
+end
+
 tabs.Server:CreateToggle("Lag Server (Landmine Edition)", function(c)
     if c then
         workspace.Interaction.PlayerPlaced.Parent = nil
@@ -340,7 +440,7 @@ do
     local event = rStor.Remotes.ZombieRelated.PlayerAttack
     local eventC = 0
     local Attack = game:GetService("ReplicatedStorage").Attack:Clone()
-    tgl = tabs.Server:CreateToggle("Annoy all", function(c)
+    tgl = tabs.Server:CreateToggle("Annoy all (Hit edition)", function(c)
         if not lplr:FindFirstChild("Attack", true) or char:FindFirstChild("Attack", true) then 
             Attack.Parent = lplr:WaitForChild("Backpack") 
         end
@@ -369,42 +469,22 @@ do
     end)
 end
 
-
 do
     local tgl
-    local event = rStor.Remotes.Melee.Damage
-    local eventC = 0
-    tgl = tabs.Server:CreateToggle("Kill aura", function(c)
-        if c then
+    
+    tgl = tabs.Server:CreateToggle("Annoy all (Acid edition)", function()
+        if tgl.Enabled then
             repeat
-                if lplr.Team == Teams.Zombie then
-                    event = rStor.Remotes.ZombieRelated.PlayerAttack
-                else
-                    event = rStor.Remotes.Melee.Damage
+                for i = 1,50 do
+                    game:GetService("ReplicatedStorage").Remotes.ZombieRelated.TouchedAcid:FireServer("")
                 end
-                if find.Weapons(true) then
-                    for _, v in living:GetChildren() do
-                        if v:GetAttribute("Team") and v:GetAttribute("Team") ~= lplr.Character:GetAttribute("Team") then
-                            local root = v:FindFirstChild("HumanoidRootPart")
-                            local hum = v:FindFirstChildWhichIsA("Humanoid")
-                            if hum and hum.Health > 0 and root and (root.Position - lplr.Character.HumanoidRootPart.Position).Magnitude <= 10 then
-                                if eventC < 100 then
-                                    coroutine.wrap(function()
-                                        eventC += 1
-                                        event:InvokeServer(root)
-                                        eventC -= 1
-                                    end)()
-                                end
-                            end
-                        end
-                    end
-                end
-                task.wait()
+                task.wait(0.3)
             until not tgl.Enabled
+        else
+            print("idk")
         end
     end)
 end
-
 
 do 
     local zombieTbl = {}
