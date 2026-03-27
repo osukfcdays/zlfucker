@@ -13,7 +13,6 @@ local tabs = {
 tabs = gui:Init({
     tabs = tabs,
     changelog = [[
-	+ v1mp22 is a nigger
     + kill all is back and better then ever
     + insta kill is back
     + majority of og features have returned
